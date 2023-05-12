@@ -33,7 +33,6 @@ class RoleSeeder extends Seeder
         Role::create(['name' => 'company owner']);
         Role::create(['name' => 'customer']);
         Role::create(['name' => 'guide']);
-        Role::create(['name' => 'public']);
     }
 }
 ```
@@ -53,7 +52,7 @@ class DatabaseSeeder extends Seeder
 }
 ```
 
-When the user registers we need now to assign a role. We will do this by just adding the ID of the public role in the `RegisteredUserController` controller.
+When the user registers we need now to assign a role. We will do this by just adding the ID of the `customer` role in the `RegisteredUserController` controller.
 
 **app/Http/Controllers/Auth/RegisteredUserController.php**:
 ```php
@@ -72,7 +71,7 @@ class RegisteredUserController extends Controller
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
-            'role_id' => 5, // [tl! ++]
+            'role_id' => 3, // [tl! ++]
         ]);
 
         event(new Registered($user));
@@ -86,7 +85,7 @@ class RegisteredUserController extends Controller
 
 Now we can register!
 
-![](images/2023-05-09_15-57.png)
+![](images/laravel-breeze-dashboard.png)
 
 Next, we can create the companies CRUD. For this, first, we need a controller and a route.
 
@@ -209,7 +208,7 @@ And the view file to show all the companies.
 </x-app-layout>
 ```
 
-![](images/2023-05-09_16-01.png)
+![](images/companies-crud-index.png)
 
 Now that we can show companies let's add create and edit pages. For the validation, we will use [Form Requests](https://laravel.com/docs/validation#form-request-validation).
 
@@ -346,7 +345,7 @@ And here are both create and edit forms.
 </x-app-layout>
 ```
 
-![](images/2023-05-09_16-24.png)
+![](images/companies-crud-edit.png)
 
 Now we just need to implement the delete method. We already have added the delete button when creating the list page. All that's left is to add a method to the controller.
 
