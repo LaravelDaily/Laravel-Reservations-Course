@@ -1,21 +1,25 @@
-So now that we have some kind of plan let's start implementing it. We will start by installing [Breeze](https://laravel.com/docs/starter-kits#breeze-and-blade) starter kit for quick authentication scaffolding and simple layout. Then we will create the first CRUD for companies.
+So now that we have some kind of plan, let's start implementing it. We will start by installing [Laravel Breeze](https://laravel.com/docs/starter-kits#breeze-and-blade) starter kit for quick authentication scaffolding and a simple layout. Then, we will create the first CRUD for **companies**.
 
 ---
 
-So first, we will install breeze.
+## Install Breeze and Assign Default Role
+
+So first, we will install Breeze.
 
 ```sh
 composer require laravel/breeze --dev
 php artisan breeze:install blade
 ```
 
-In the plan, we already added a `Role` table and a `role_id` column to the `User` table. Because of this if you try to register you will get an error. We need to add roles and assign a role when a user registers.
+During the planning phase, we already added a `Role` table and a `role_id` column to the `User` table. Because of this, if you try to register you will get an error:
 
 ```
 SQLSTATE[HY000]: General error: 1364 Field 'role_id' doesn't have a default value
 ```
 
-For creating roles we will create a [seeder](https://laravel.com/docs/seeding).
+So, we need to add the default roles and assign a role when a user registers.
+
+For adding roles, we will create a [Seeder](https://laravel.com/docs/seeding).
 
 ```sh
 php artisan make:seeder RoleSeeder
@@ -52,20 +56,15 @@ class DatabaseSeeder extends Seeder
 }
 ```
 
-When the user registers we need now to assign a role. We will do this by just adding the ID of the `customer` role in the `RegisteredUserController` controller.
+When the user registers, we need to assign a role. We will do this by just adding the ID of the `customer` role in the `RegisteredUserController` of Laravel Breeze.
 
 **app/Http/Controllers/Auth/RegisteredUserController.php**:
 ```php
 class RegisteredUserController extends Controller
 {
-    // ...
     public function store(Request $request): RedirectResponse
     {
-        $request->validate([
-            'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'string', 'email', 'max:255', 'unique:'.User::class],
-            'password' => ['required', 'confirmed', Rules\Password::defaults()],
-        ]);
+        // ...
 
         $user = User::create([
             'name' => $request->name,
@@ -74,20 +73,26 @@ class RegisteredUserController extends Controller
             'role_id' => 3, // [tl! ++]
         ]);
 
-        event(new Registered($user));
-
-        Auth::login($user);
-
-        return redirect(RouteServiceProvider::HOME);
+        // ...
     }
 }
 ```
 
-Now we can register!
+Now we can register, great!
 
 ![](images/laravel-breeze-dashboard.png)
 
-Next, we can create the companies CRUD. For this, first, we need a controller and a route.
+Ok, now we can move to the actual functionality, and looking at the plan... we'll start with managing companies.
+
+---
+
+## Show Table of All Companies
+
+Next, we can create the companies CRUD. For now, it will be available to everyone, and in the next lesson, we will restrict this functionality to administrators only. 
+
+That's in general my approach: first focus on making the feature itself work, and then add more validation and restrictions.
+
+So, first, we need a Controller and a Route.
 
 ```sh
 php artisan make:controller CompanyController
@@ -95,21 +100,18 @@ php artisan make:controller CompanyController
 
 **routes/web.php**:
 ```php
-use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\CompanyController;
 
-// ...
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
-    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
-    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+
+    // ...
 
     Route::resource('companies', CompanyController::class); // [tl! ++]
 });
-
-require __DIR__.'/auth.php';
 ```
 
-And let's add a navigation link just under the dashboard.
+And let's add a navigation link in the menu, just next to the dashboard. For that, we will just copy-paste the existing Laravel Breeze `x-nav-link` component.
 
 **resources/views/layouts/navigation.blade.php**:
 ```blade
@@ -126,7 +128,14 @@ And let's add a navigation link just under the dashboard.
 // ...
 ```
 
-Next, in the controller, we need to get all the companies and show them. We will save all companies' blade files in the `resources/views/companies` directory.
+Next, in the Controller, we need to get all the companies and show them. 
+
+We will save all Blade files related to companies in the `resources/views/companies` directory: it's a common practice to have files like this, often corresponding to the Controller methods:
+
+- `resources/views/[feature-name]/index.blade.php`
+- `resources/views/[feature-name]/create.blade.php`
+- `resources/views/[feature-name]/edit.blade.php`
+- etc.
 
 **app/Http/Controllers/CompanyController.php**
 ```php
@@ -144,7 +153,7 @@ class CompanyController extends Controller
 }
 ```
 
-And the view file to show all the companies.
+And here's the Blade View file to show all the companies.
 
 **resources/views/companies/index.blade.php**:
 ```blade
@@ -210,7 +219,13 @@ And the view file to show all the companies.
 
 ![](images/companies-crud-index.png)
 
-Now that we can show companies let's add create and edit pages. For the validation, we will use [Form Requests](https://laravel.com/docs/validation#form-request-validation).
+---
+
+## Create and Edit Companies
+
+Now that we can show companies, let's add the **create** and **edit** forms. 
+
+For the validation, we will use [Form Requests](https://laravel.com/docs/validation#form-request-validation). So, let's generate them immediately, so we would use them in the Controller.
 
 ```sh
 php artisan make:request StoreCompanyRequest
@@ -237,7 +252,7 @@ class StoreCompanyRequest extends FormRequest
 }
 ```
 
-The controller code for creating and updating would be as below:
+The Controller code for creating and updating:
 
 **app/Http/Controllers/CompanyController.php**:
 ```php
@@ -248,6 +263,7 @@ use App\Http\Requests\UpdateCompanyRequest;
 class CompanyController extends Controller
 {
     // ...
+
     public function create(): View
     {
         return view('companies.create');
@@ -347,13 +363,20 @@ And here are both create and edit forms.
 
 ![](images/companies-crud-edit.png)
 
-Now we just need to implement the delete method. We already have added the delete button when creating the list page. All that's left is to add a method to the controller.
+---
+
+## Delete Companies
+
+Now we just need to implement the **delete** method. Not sure if you noticed, but I've already added the Delete button before, when creating the list page. 
+
+All that's left is to add a method to the Controller.
 
 **app/Http/Controllers/CompanyController.php**:
 ```php
 class CompanyController extends Controller
 {
     // ...
+
     public function destroy(Company $company)
     {
         $company->delete();
