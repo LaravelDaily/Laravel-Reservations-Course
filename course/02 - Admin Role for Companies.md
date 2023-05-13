@@ -1,13 +1,13 @@
-After creating the companies CRUD, the next step is to give access to this CRUD only for users with the `Administrator` role. Because only administrators will be able to access companies for this we will create a [Middleware](https://laravel.com/docs/middleware).
+After creating the companies CRUD, the next step is to give access to this CRUD only for users with the `Administrator` role. For this, we will create a [Middleware](https://laravel.com/docs/middleware).
 
 ---
 
-## Permissions
+## Middleware isAdmin
 
-So, first, we need to create the middleware and register it. We will call it `isAdmin`.
+So, first, we need to create a Middleware and assign a name to it in the Kernel file. We will call it `isAdmin`.
 
 ```sh
-php artisan make:middleware isAdmin
+php artisan make:middleware IsAdminMiddleware
 ```
 
 **app/Http/Kernel.php**:
@@ -15,29 +15,24 @@ php artisan make:middleware isAdmin
 class Kernel extends HttpKernel
 {
     // ...
+
     protected $middlewareAliases = [
         'auth' => \App\Http\Middleware\Authenticate::class,
-        'auth.basic' => \Illuminate\Auth\Middleware\AuthenticateWithBasicAuth::class,
-        'auth.session' => \Illuminate\Session\Middleware\AuthenticateSession::class,
-        'cache.headers' => \Illuminate\Http\Middleware\SetCacheHeaders::class,
-        'can' => \Illuminate\Auth\Middleware\Authorize::class,
-        'guest' => \App\Http\Middleware\RedirectIfAuthenticated::class,
-        'password.confirm' => \Illuminate\Auth\Middleware\RequirePassword::class,
-        'signed' => \App\Http\Middleware\ValidateSignature::class,
-        'throttle' => \Illuminate\Routing\Middleware\ThrottleRequests::class,
-        'verified' => \Illuminate\Auth\Middleware\EnsureEmailIsVerified::class,
-        'isAdmin' => \App\Http\Middleware\isAdmin::class, // [tl! ++]
+
+        // ...
+
+        'isAdmin' => \App\Http\Middleware\IsAdminMiddleware::class, // [tl! ++]
     ];
 }
 ```
 
-In the middleware, we will abort the request if the user doesn't have an `administrator` role.
+In the Middleware, we will abort the request if the user doesn't have an `administrator` role.
 
-**App/Http/Middleware/isAdmin**:
+**App/Http/Middleware/IsAdminMiddleware.php**:
 ```php
 use Symfony\Component\HttpFoundation\Response;
 
-class isAdmin
+class IsAdminMiddleware
 {
     public function handle(Request $request, Closure $next): Response
     {
@@ -48,30 +43,33 @@ class isAdmin
 }
 ```
 
-And we need to add this middleware to the companies route.
+**Notice**: I prefer to suffix all filenames in Laravel with their purpose, so `AbcMiddleware` will immediately tell us what that file does. When naming it in the Kernel, you can skip this suffix and shorten it however you want, like `isAdmin` in my case.
+
+Next, we need to add this Middleware to the companies Route.
 
 **routes/web.php**:
 ```php
-// ...
 Route::middleware('auth')->group(function () {
-    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
-    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
-    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+    // ...
 
     Route::resource('companies', CompanyController::class); // [tl! --]
     Route::resource('companies', CompanyController::class)->middleware('isAdmin'); // [tl! ++]
 });
-
-require __DIR__.'/auth.php';
 ```
 
-Now if you would visit the companies page you will get a `Forbidden` page.
+Now, if you visit the companies page as a registered user, you will get a `Forbidden` page, because the default role of users is **customer**, not administrator.
 
 ![](images/companies-forbidden.png)
 
-Next, we need to hide `Companies` in the navigations for everyone except for users with the `administrator` role. We could create a custom [Blade Directive](https://laravel.com/docs/blade#extending-blade) but for now, we will just use a simple [`@if`](https://laravel.com/docs/blade#if-statements).
+---
 
-Later, if we will see that we will are repeating this check then we will create a dedicated Blade directive. 
+## Menu Item: Only For Administrators
+
+Next, we need to hide `Companies` in the navigation menu for everyone except the `administrator` role users. 
+
+We could create a custom [Blade Directive](https://laravel.com/docs/blade#extending-blade), but for now, we will just use a simple `@if` in Blade.
+
+Later, if we see that we are repeating this check, then we will create a dedicated Blade directive. 
 
 **resources/views/layouts/navigation.blade.php**:
 ```blade
@@ -90,15 +88,23 @@ Later, if we will see that we will are repeating this check then we will create 
 // ...
 ```
 
-So now other users don't see the `Companies` in the navigation.
+So now, other users don't see the `Companies` in the navigation.
 
 ![](images/companies-link-only-for-admins.png)
 
-## Tests
+---
 
-Now, let's write tests to ensure that only users with the `administrator` role can access the `companies` page. But, before that, we need to fix default Breeze tests.
+## Automated Tests
 
-When we added the `role_id` column to the `Users` table it broke the default breeze tests.
+My personal philosophy with automated tests is that you need to start writing them almost from the very beginning, feature by feature, immediately after you finish a certain clear part of that feature.
+
+Some people prefer TDD to write tests first, but for me personally it never worked well, cause in many cases you don't have the full clearance on what the feature should look like, in its final version. Which then leads to double work of editing both the code and the tests multiple times.
+
+Other people prefer to write tests after all the project is done, but in that case you may likely forget the details of how certain features work, especially the ones you created long time ago.
+
+Now, let's start with writing tests for permission: to ensure that only users with the `administrator` role can access the `companies` page. 
+
+But first, before that, we need to fix the default tests that come from Laravel Breeze. When we added the `role_id` column to the `Users` table, it broke the default breeze tests:
 
 ```
 FAILED  Tests\Feature\Auth\AuthenticationTest > users can authenticate using the login screen                                                                   QueryException   
@@ -119,7 +125,7 @@ FAILED  Tests\Feature\Auth\AuthenticationTest > users can authenticate using the
   16  tests/Feature/Auth/AuthenticationTest.php:23
 ```
 
-To fix it we just need to add `role_id` to the `UserFactory`. And while we are at the `UserFactory` let's add a [Factory State](https://laravel.com/docs/eloquent-factories#factory-states) for easier creation of an `administrator` user.
+To fix it, we just need to add the `role_id` to the `UserFactory`. And while we are at the `UserFactory` let's add a [Factory State](https://laravel.com/docs/eloquent-factories#factory-states) for easier creation of an `administrator` user.
 
 **database/factories/UserFactory.php**:
 ```php
@@ -159,6 +165,8 @@ So now, we can create our tests.
 php artisan make:test CompanyTest
 ```
 
+This file of `CompanyTest` will contain all the methods related to managing companies.
+
 **tests/Feature/CompanyTest.php**:
 ```php
 use App\Models\User;
@@ -178,7 +186,7 @@ class CompanyTest extends TestCase
         $response->assertOk();
     }
 
-    public function test_non_admin_user_can_access_companies_index_page(): void
+    public function test_non_admin_user_cannot_access_companies_index_page(): void
     {
         $user = User::factory()->create();
 
@@ -191,17 +199,17 @@ class CompanyTest extends TestCase
 
 So, what do we do in these tests?
 
-- First, because in the tests we are working with the database, it is important to use the `RefreshDatabase` trait.
-- Next, we create a user. Here, in the first test, we use the earlier added `admin` state.
-- Then, using created user we go to the `companies.index` route.
-- Ant last, we check the response. The administrator will receive a response status of `200` and other users will receive a status of `403`.
+- First, because in the tests we are working with the database, we enable the `RefreshDatabase` trait. But don't forget to edit your `phpunit.xml` to ensure you're working on the **testing** database and not live!
+- Next, we create a user. Here, in the first test, we use the earlier added `admin()` state from the Factory.
+- Then, acting as a newly-created user, we go to the `companies.index` route.
+- Ant last, we check the response. The administrator will get a response HTTP status of `200 OK` and other users will receive an HTTP status of `403 Forbidden`.
 
 ```
 > php artisan test --filter=CompanyTest
 
 PASS  Tests\Feature\CompanyTest
 ✓ admin user can access companies index page                                                                                                                               0.09s  
-✓ non admin user can access companies index page                                                                                                                           0.01s  
+✓ non admin user cannot access companies index page                                                                                                                        0.01s  
 
 Tests:    2 passed (2 assertions)
 Duration: 0.13s
