@@ -19,7 +19,7 @@ class CompanyTest extends TestCase
         $response->assertOk();
     }
 
-    public function test_non_admin_user_can_access_companies_index_page(): void
+    public function test_non_admin_user_cannot_access_companies_index_page(): void
     {
         $user = User::factory()->create();
 

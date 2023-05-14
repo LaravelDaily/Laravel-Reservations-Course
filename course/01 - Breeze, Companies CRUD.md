@@ -56,10 +56,31 @@ class DatabaseSeeder extends Seeder
 }
 ```
 
-When the user registers, we need to assign a role. We will do this by just adding the ID of the `customer` role in the `RegisteredUserController` of Laravel Breeze.
+When the user registers, we need to assign a role. We could just add the ID of the `customer` role in the `RegisteredUserController` of Laravel Breeze. But if sometime in the feature new developer would join this project he wouldn't know what that number means. For this, we will use PHP Enums feature.
+
+There is no command to create enums so we will create it manually. First, create a new directory `App\Enums` and inside it create a PHP file `Role.php`.
+
+![phpstorm create enum](images/phpstorm-create-enum.png)
+
+Inside `app/Enums/Role.php` we just need to add all the roles and it's value will be the ID.
+
+**app/Enums/Role.php**:
+```php
+enum Role: int
+{
+    case ADMINISTRATOR = 1;
+    case COMPANY_OWNER = 2;
+    case CUSTOMER = 3;
+    case GUIDE = 4;
+}
+```
+
+So now, we can use `Role` Enum where we need it.
 
 **app/Http/Controllers/Auth/RegisteredUserController.php**:
 ```php
+use App\Enums\Role;
+
 class RegisteredUserController extends Controller
 {
     public function store(Request $request): RedirectResponse
@@ -70,7 +91,7 @@ class RegisteredUserController extends Controller
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
-            'role_id' => 3, // [tl! ++]
+            'role_id' => Role::CUSTOMER->value, // [tl! ++]
         ]);
 
         // ...
