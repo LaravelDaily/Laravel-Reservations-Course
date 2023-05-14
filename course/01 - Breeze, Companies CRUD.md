@@ -332,6 +332,7 @@ And here are both create and edit forms.
                         <div>
                             <x-input-label for="name" value="Name" />
                             <x-text-input id="name" name="name" value="{{ old('name') }}" type="text" class="block mt-1 w-full" />
+                            <x-input-error :messages="$errors->get('name')" class="mt-2" />
                         </div>
 
                         <div class="mt-4">
@@ -367,6 +368,7 @@ And here are both create and edit forms.
                         <div>
                             <x-input-label for="name" value="Name" />
                             <x-text-input id="name" name="name" value="{{ old('name', $company->name) }}" type="text" class="block mt-1 w-full" />
+                            <x-input-error :messages="$errors->get('name')" class="mt-2" />
                         </div>
 
                         <div class="mt-4">

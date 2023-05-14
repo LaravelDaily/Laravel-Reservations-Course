@@ -210,8 +210,8 @@ So, what do we do in these tests?
 > php artisan test --filter=CompanyTest
 
 PASS  Tests\Feature\CompanyTest
-✓ admin user can access companies index page                                                                                                                               0.09s  
-✓ non admin user cannot access companies index page                                                                                                                        0.01s  
+✓ admin user can access companies index page 0.09s  
+✓ non admin user cannot access companies index page 0.01s  
 
 Tests:    2 passed (2 assertions)
 Duration: 0.13s
