@@ -31,6 +31,8 @@ class User extends Authenticatable
 }
 ```
 
+## CRUD Actions
+
 Now, let's move on to the main feature. First, let's show in the navigation the new item `Administrators` which will be visible only for users with the role of `Company Owner`. Again, for now, I will just add a simple `@if` to check for the `role_id`. Let's add this new menu item under the companies.
 
 **resources/views/layouts/navigation.blade.php**:

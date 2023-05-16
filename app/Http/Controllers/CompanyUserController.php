@@ -14,7 +14,7 @@ class CompanyUserController extends Controller
     {
         $this->authorize('viewAny', $company);
 
-        $users = $company->users()->get();
+        $users = $company->users()->where('role_id', Role::COMPANY_OWNER->value)->get();
 
         return view('companies.users.index', compact('company', 'users'));
     }
