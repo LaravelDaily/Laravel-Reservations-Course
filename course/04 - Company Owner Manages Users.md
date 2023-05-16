@@ -2,6 +2,8 @@ Now that administrator can add users to the company, next we need to implement a
 
 ---
 
+## Soft Delete Users
+
 First, let's add [`SoftDeletes`](https://laravel.com/docs/eloquent#soft-deleting) for the User Model in case someone accidentally will delete a user.
 
 ```sh
@@ -30,6 +32,51 @@ class User extends Authenticatable
     // ...
 }
 ```
+
+Because of this added feature, the test `test_user_can_delete_their_account` that came from Laravel Breeze now is broken.
+
+**tests/Feature/ProfileTest**:
+```php
+class ProfileTest extends TestCase
+{
+// ...
+
+    public function test_user_can_delete_their_account(): void
+    {
+        $user = User::factory()->create();
+
+        $response = $this
+            ->actingAs($user)
+            ->delete('/profile', [
+                'password' => 'password',
+            ]);
+
+        $response
+            ->assertSessionHasNoErrors()
+            ->assertRedirect('/');
+
+        $this->assertGuest();
+        $this->assertNull($user->fresh()); // [tl! --]
+        $this->assertSoftDeleted($user->fresh()); // [tl! ++]
+    }
+    
+// ...
+}
+```
+
+Great, now it's fixed!
+
+```
+> php artisan test --filter=test_user_can_delete_their_account
+
+PASS  Tests\Feature\ProfileTest
+✓ user can delete their account 0.13s  
+
+Tests:    1 passed (5 assertions)
+Duration: 0.15s
+```
+
+---
 
 ## CRUD Actions
 

@@ -252,7 +252,7 @@ class CompanyUserController extends Controller
             'name' => $request->input('name'),
             'email' => $request->input('email'),
             'password' => bcrypt($request->input('password')),
-            'role_id' => Role::CUSTOMER->value,
+            'role_id' => Role::COMPANY_OWNER->value,
         ]);
 
         return to_route('companies.users.index', $company);
