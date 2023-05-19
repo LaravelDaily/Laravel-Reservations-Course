@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Enums\Role;
+use App\Models\Invitation;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Providers\RouteServiceProvider;
@@ -13,15 +14,30 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules;
 use Illuminate\View\View;
+use Illuminate\Validation\ValidationException;
 
 class RegisteredUserController extends Controller
 {
     /**
      * Display the registration view.
      */
-    public function create(): View
+    public function create(Request $request): View
     {
-        return view('auth.register');
+        $email = null;
+
+        if ($request->has('invitation_token')) {
+            $token = $request->input('invitation_token');
+
+            session()->put('invitation_token', $token);
+
+            $invitation = Invitation::where('token', $token)
+                ->whereNull('registered_at')
+                ->firstOrFail();
+
+            $email = $invitation->email;
+        }
+
+        return view('auth.register', compact('email'));
     }
 
     /**
@@ -37,11 +53,24 @@ class RegisteredUserController extends Controller
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
         ]);
 
+        if ($request->session()->get('invitation_token')) {
+            $invitation = Invitation::where('token', $request->session()->get('invitation_token'))
+                ->where('email', $request->email)
+                ->whereNull('registered_at')
+                ->firstOr(fn() => throw ValidationException::withMessages(['invitation' => 'Invitation link does not match the email']));
+
+            $role = $invitation->role_id;
+            $company = $invitation->company_id;
+
+            $invitation->update(['registered_at' => now()]);
+        }
+
         $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
-            'role_id' => Role::CUSTOMER->value,
+            'role_id' => $role ?? Role::CUSTOMER->value,
+            'company_id' => $company ?? null,
         ]);
 
         event(new Registered($user));

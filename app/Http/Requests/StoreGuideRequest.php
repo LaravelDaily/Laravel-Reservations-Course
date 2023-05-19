@@ -23,9 +23,14 @@ class StoreGuideRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name' => ['required', 'string'],
-            'email' => ['required', 'email', 'unique:users,email'],
-            'password' => ['required', Rules\Password::defaults()],
+            'email' => ['required', 'email', 'unique:invitations,email'],
+        ];
+    }
+
+    public function messages(): array
+    {
+        return [
+            'email.unique' => 'Invitation with this email address already requested.'
         ];
     }
 }
