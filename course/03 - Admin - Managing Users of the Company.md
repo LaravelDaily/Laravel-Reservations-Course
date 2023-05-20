@@ -1,15 +1,18 @@
-Before implementing the next feature, adding users to the company, we asked the client a few questions.
+The next step is to add users with the role `company owner`: the ones who would later manage reservations and assign guides to them. Before implementing this feature, we asked the client a few questions.
 
-**Q**: Can a company have more than one user?
-**A**: Yes.
+**Question**: Can a company have more than one user with the `company owner` role?
+**Answer**: Yes.
+**What it means to us**: No extra work, the `belongsTo` relationship is enough, no `many-to-many` here.
 
-**Q**: Who can manage users for the company? Only the `administrator` or the company itself.
-**A**: The company itself.
+**Question**: Who can manage company owners? Only the `super administrator` or the company itself.
+**Answer**: The company itself.
+**What it means to us**: Extra unplanned work. We didn't initially plan to build User management for Company Owner roles themselves.
 
-**Q**: Can one user be in more than one company?
-**A**: No.
+**Question**: Can one "company owner" user belong to more than one company?
+**Answer**: No.
+**What it means to us**: No extra work, the `belongsTo` relationship is enough, no `many-to-many` here.
 
-From these answers, we know that in the planning part adding `company_id` to the `User` table for assigning a user to the company is enough. But, the client said that the company itself will be able to manage users which wasn't mentioned before. Because of this, **we need to tell** the client that it will take longer to implement this feature and that it will cost more.
+Important at this stage: if we discover new functionality along the way, **we need to tell** the client that some new features will take longer to implement and/or will cost more.
 
 Ideally, these questions would have been asked before even starting to code to avoid such misunderstandings.
 
@@ -17,7 +20,7 @@ Ideally, these questions would have been asked before even starting to code to a
 
 ## Nested Resource Controller
 
-First, we will implement a feature for the users with the `administrator` role. For it, we will use the [Nested Resources](https://laravel.com/docs/controllers#restful-nested-resources) feature.
+First, we will implement this User management feature for the users with the `administrator` role. For that, we will use the [Nested Resources](https://laravel.com/docs/controllers#restful-nested-resources) feature.
 
 So, first, let's create a Controller and a Route.
 
@@ -37,7 +40,7 @@ Route::middleware('auth')->group(function () {
 });
 ```
 
-> I specifically didn't add `isAdmin` middleware for this route because it can be reused for users with the `company owner` role. We will only need to restrict access so that users couldn't see other companies. My first thought for this is to use [Policies](https://laravel.com/docs/authorization).
+> **Notice:** I specifically didn't add `isAdmin` middleware for this route because later it can be reused for users with the `company owner` role. We will only need to restrict access so that users couldn't see other companies. My first thought for this is to use [Policies](https://laravel.com/docs/authorization).
 
 So now we can add a new action to the companies list page.
 
@@ -45,30 +48,21 @@ So now we can add a new action to the companies list page.
 ```blade
 // ...
 
-    <td class="px-6 py-4 text-sm leading-5 text-gray-900 whitespace-no-wrap">
-        <a href="{{ route('companies.users.index', $company) }}" {{-- [tl! add:start] --}}
-           class="inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-xs font-semibold uppercase tracking-widest text-gray-700 shadow-sm transition duration-150 ease-in-out hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-25">
-            Users
-        </a> {{-- [tl! add:end] --}}
-        <a href="{{ route('companies.edit', $company) }}"
-           class="inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-xs font-semibold uppercase tracking-widest text-gray-700 shadow-sm transition duration-150 ease-in-out hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-25">
-            Edit
-        </a>
-        <form action="{{ route('companies.destroy', $company) }}" method="POST" onsubmit="return confirm('Are you sure?')" style="display: inline-block;">
-            @csrf
-            @method('DELETE')
-            <x-danger-button>
-                Delete
-            </x-danger-button>
-        </form>
-    </td>
+<td class="px-6 py-4 text-sm leading-5 text-gray-900 whitespace-no-wrap">
+    <a href="{{ route('companies.users.index', $company) }}" {{-- [tl! add:start] --}}
+       class="inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-xs font-semibold uppercase tracking-widest text-gray-700 shadow-sm transition duration-150 ease-in-out hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-25">
+        Users
+    </a> {{-- [tl! add:end] --}}
+
+    {{-- ... Edit/Delete buttons --}}
+</td>
     
 // ...
 ```
 
 ![users action button](images/users-button-in-companies-list.png)
 
-Next, in the Controller we need all the users that belong to the company. But first, we need a `users` relation in the `Company` Model.
+Next, in the Controller we need to get all the users that belong to the company. But first, we need a `users` relation in the `Company` Model.
 
 **app/Models/Company.php**:
 ```php
@@ -171,7 +165,7 @@ And here's the Blade View file to show all the users that belong to the selected
 </x-app-layout>
 ```
 
-This blade file is very similar to the one we had for listing the companies. The main difference is that because this is a nested view for every action we also need to pass a company.
+This Blade file is very similar to the one we had for listing the companies. The main difference is that because this is a nested View, for every action we also need to pass a company.
 
 ---
 
@@ -419,7 +413,7 @@ Now the test.
 php artisan make:test CompanyUserTest
 ```
 
-And in this test, we will test that user with the `administrator` role can do every CRUD action.
+And in this test, we will check that user with the `administrator` role can perform every CRUD action.
 
 **tests/Feature/CompanyUserTest.php**:
 ```php
