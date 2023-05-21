@@ -1,4 +1,4 @@
-So now that we have some kind of plan, let's start implementing it. We will start by installing [Laravel Breeze](https://laravel.com/docs/starter-kits#breeze-and-blade) starter kit for quick authentication scaffolding and a simple layout. Then, we will create the first CRUD for **companies**.
+So now that we have some plan let's start implementing it. We will start by installing [Laravel Breeze](https://laravel.com/docs/starter-kits#breeze-and-blade) starter kit for quick authentication scaffolding and a simple layout. Then, we will create the first CRUD for **companies**.
 
 ---
 
@@ -11,7 +11,7 @@ composer require laravel/breeze --dev
 php artisan breeze:install blade
 ```
 
-During the planning phase, we already added a `Role` table and a `role_id` column to the `User` table. Because of this, if you try to register you will get an error:
+During the planning phase, we added a `Role` table and a `role_id` column to the `User` table. Because of this, if you try to register, you will get an error:
 
 ```
 SQLSTATE[HY000]: General error: 1364 Field 'role_id' doesn't have a default value
@@ -41,7 +41,7 @@ class RoleSeeder extends Seeder
 }
 ```
 
-And add this seeder to the `DatabaseSeeder`.
+And add this Seeder to the `DatabaseSeeder`.
 
 **database/seeders/DatabaseSeeder.php**:
 ```php
@@ -56,13 +56,13 @@ class DatabaseSeeder extends Seeder
 }
 ```
 
-When the user registers, we need to assign a role. We could just add the ID of the `customer` role in the `RegisteredUserController` of Laravel Breeze. But if sometime in the feature new developer would join this project he wouldn't know what that number means. For this, we will use PHP Enums feature.
+When the user registers, we need to assign a role. We could add the ID of the `customer` role in the `RegisteredUserController` of Laravel Breeze. But if a new developer would join this project sometime in the future, he wouldn't know what that number means. For this, we will use the PHP Enums feature.
 
-There is no command to create enums so we will create it manually. First, create a new directory `App\Enums` and inside it create a PHP file `Role.php`.
+There is no command to create enums, so we will create it manually. First, create a new directory, `App\Enums`; inside it, create a PHP file, `Role.php`.
 
 ![phpstorm create enum](images/phpstorm-create-enum.png)
 
-Inside `app/Enums/Role.php` we just need to add all the roles and it's value will be the ID.
+Inside `app/Enums/Role.php`, we need to add all the roles; their value will be the ID.
 
 **app/Enums/Role.php**:
 ```php
@@ -103,7 +103,7 @@ Now we can register, great!
 
 ![](images/laravel-breeze-dashboard.png)
 
-Ok, now we can move to the actual functionality, and looking at the plan... we'll start with managing companies.
+Ok, now we can move to the actual functionality, and looking at the plan, we'll start with managing companies.
 
 ---
 
@@ -111,7 +111,7 @@ Ok, now we can move to the actual functionality, and looking at the plan... we'l
 
 Next, we can create the companies CRUD. For now, it will be available to everyone, and in the next lesson, we will restrict this functionality to administrators only. 
 
-That's in general my approach: first focus on making the feature itself work, and then add more validation and restrictions.
+In general, my approach: first focus on making the feature itself work and then add more validation and restrictions.
 
 So, first, we need a Controller and a Route.
 
@@ -132,7 +132,7 @@ Route::middleware('auth')->group(function () {
 });
 ```
 
-And let's add a navigation link in the menu, just next to the dashboard. For that, we will just copy-paste the existing Laravel Breeze `x-nav-link` component.
+And let's add a navigation link in the menu, just next to the dashboard. We will copy-paste the existing Laravel Breeze `x-nav-link` component for that.
 
 **resources/views/layouts/navigation.blade.php**:
 ```blade
@@ -246,7 +246,7 @@ And here's the Blade View file to show all the companies.
 
 Now that we can show companies, let's add the **create** and **edit** forms. 
 
-For the validation, we will use [Form Requests](https://laravel.com/docs/validation#form-request-validation). So, let's generate them immediately, so we would use them in the Controller.
+We will use [Form Requests](https://laravel.com/docs/validation#form-request-validation) for the validation. Let's generate them immediately so we can use them in the Controller.
 
 ```sh
 php artisan make:request StoreCompanyRequest
@@ -390,7 +390,7 @@ And here are both create and edit forms.
 
 ## Delete Companies
 
-Now we just need to implement the **delete** method. Not sure if you noticed, but I've already added the Delete button before, when creating the list page. 
+Now we need to implement the **delete** method. Not sure if you noticed, but I've already added the Delete button before, when creating the list page. 
 
 All that's left is to add a method to the Controller.
 

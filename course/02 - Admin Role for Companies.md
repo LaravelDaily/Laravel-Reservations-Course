@@ -26,7 +26,7 @@ class Kernel extends HttpKernel
 }
 ```
 
-In the Middleware, we will abort the request if the user doesn't have an `administrator` role.
+We will abort the request in the Middleware if the user doesn't have an `administrator` role.
 
 **App/Http/Middleware/IsAdminMiddleware.php**:
 ```php
@@ -57,7 +57,7 @@ Route::middleware('auth')->group(function () {
 });
 ```
 
-Now, if you visit the companies page as a registered user, you will get a `Forbidden` page, because the default role of users is **customer**, not administrator.
+Now, if you visit the companies page as a registered user, you will get a `Forbidden` page because the default role of users is **customer**, not the administrator.
 
 ![](images/companies-forbidden.png)
 
@@ -65,11 +65,11 @@ Now, if you visit the companies page as a registered user, you will get a `Forbi
 
 ## Menu Item: Only For Administrators
 
-Next, we need to hide `Companies` in the navigation menu for everyone except the `administrator` role users. 
+Next, we must hide `Companies` in the navigation menu for everyone except the `administrator` role users. 
 
 We could create a custom [Blade Directive](https://laravel.com/docs/blade#extending-blade), but for now, we will just use a simple `@if` in Blade.
 
-Later, if we see that we are repeating this check, then we will create a dedicated Blade directive. 
+Later, if we see that we are repeating this check, we will create a dedicated Blade directive. 
 
 **resources/views/layouts/navigation.blade.php**:
 ```blade
@@ -98,13 +98,13 @@ So now, other users don't see the `Companies` in the navigation.
 
 My personal philosophy with automated tests is that you need to start writing them almost from the very beginning, feature by feature, immediately after you finish a certain clear part of that feature.
 
-Some people prefer TDD to write tests first, but for me personally it never worked well, cause in many cases you don't have the full clearance on what the feature should look like, in its final version. Which then leads to double work of editing both the code and the tests multiple times.
+Some people prefer TDD to write tests first, but for me personally, it never worked well, cause in many cases, you don't have the full clearance on what the feature should look like in its final version. Which then leads to double work of editing both the code and the tests multiple times.
 
-Other people prefer to write tests after all the project is done, but in that case you may likely forget the details of how certain features work, especially the ones you created long time ago.
+Other people prefer to write tests after the project is done, but in that case you may likely forget the details of how certain features work, especially the ones you created long time ago.
 
 Now, let's start with writing tests for permission: to ensure that only users with the `administrator` role can access the `companies` page. 
 
-But first, before that, we need to fix the default tests that come from Laravel Breeze. When we added the `role_id` column to the `Users` table, it broke the default breeze tests:
+But before that, we need to fix the default tests from Laravel Breeze. When we added the `role_id` column to the `Users` table, it broke the default breeze tests:
 
 ```
 FAILED  Tests\Feature\Auth\AuthenticationTest > users can authenticate using the login screen                                                                   QueryException   
@@ -125,7 +125,7 @@ FAILED  Tests\Feature\Auth\AuthenticationTest > users can authenticate using the
   16  tests/Feature/Auth/AuthenticationTest.php:23
 ```
 
-To fix it, we just need to add the `role_id` to the `UserFactory`. And while we are at the `UserFactory` let's add a [Factory State](https://laravel.com/docs/eloquent-factories#factory-states) for easier creation of an `administrator` user.
+We need to add the `role_id` to the `UserFactory` to fix it. And while we are at the `UserFactory`, let's add a [Factory State](https://laravel.com/docs/eloquent-factories#factory-states) for easier `administrator` user creation.
 
 **database/factories/UserFactory.php**:
 ```php
@@ -202,9 +202,9 @@ class CompanyTest extends TestCase
 So, what do we do in these tests?
 
 - First, because in the tests we are working with the database, we enable the `RefreshDatabase` trait. But don't forget to edit your `phpunit.xml` to ensure you're working on the **testing** database and not live!
-- Next, we create a user. Here, in the first test, we use the earlier added `admin()` state from the Factory.
+- Next, we create a user. In the first test, we use the earlier added `admin()` state from the Factory.
 - Then, acting as a newly-created user, we go to the `companies.index` route.
-- Ant last, we check the response. The administrator will get a response HTTP status of `200 OK` and other users will receive an HTTP status of `403 Forbidden`.
+- Ant last, we check the response. The administrator will get a response HTTP status of `200 OK`, and other users will receive an HTTP status of `403 Forbidden`.
 
 ```
 > php artisan test --filter=CompanyTest
