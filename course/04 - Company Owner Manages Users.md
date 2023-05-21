@@ -1,10 +1,10 @@
-Now that administrator can add users to the company, next we need to implement a feature where the company owner can add users to its company himself.
+Now that the administrator can add users to the company, we need to implement a feature where the owner can add users to the company himself.
 
 ---
 
 ## Soft Delete Users
 
-First, let's add [`SoftDeletes`](https://laravel.com/docs/eloquent#soft-deleting) for the User Model in case someone accidentally will delete a user.
+First, let's add [`SoftDeletes`](https://laravel.com/docs/eloquent#soft-deleting) for the User Model if someone accidentally deletes a user.
 
 ```sh
 php artisan make:migration "add soft deletes to users table"
@@ -33,7 +33,7 @@ class User extends Authenticatable
 }
 ```
 
-Because of this added feature, the test `test_user_can_delete_their_account` that came from Laravel Breeze now is broken.
+Because of this added feature, the test `test_user_can_delete_their_account` from Laravel Breeze is now broken.
 
 **tests/Feature/ProfileTest**:
 ```php
@@ -80,7 +80,7 @@ Duration: 0.15s
 
 ## CRUD Actions
 
-Now, let's move on to the main feature. First, let's show in the navigation the new item `Administrators` which will be visible only for users with the role of `Company Owner`. Again, for now, I will just add a simple `@if` to check for the `role_id`. Let's add this new menu item under the companies.
+Now, let's move on to the main feature. First, let's show the new item `Administrators` in the navigation, which will be visible only for users with the role of `Company Owner`. Again, for now, I will just add a simple `@if` to check for the `role_id`. Let's add this new menu item under the companies.
 
 **resources/views/layouts/navigation.blade.php**:
 ```blade
@@ -107,7 +107,7 @@ Now, let's move on to the main feature. First, let's show in the navigation the 
 
 ![administrators for a company navigation](images/administrators-for-a-company-navigation.png)
 
-Now that we have the navigation link, let's implement the backend part. So, first, let's create a policy and register it in the `AuthServiceProvider`.
+Now that we have the navigation link let's implement the backend part. So, first, let's create a policy and register it in the `AuthServiceProvider`.
 
 ```sh
 php artisan make:policy CompanyUserPolicy --model=Company
@@ -128,9 +128,9 @@ class AuthServiceProvider extends ServiceProvider
 }
 ```
 
-In the policy itself, I immediately thought that an `administrator` will be able to do everything. So for this, I immediately remembered the `before` [Policy Filter](https://laravel.com/docs/authorization#authorizing-actions-using-policies) method. In this method, we will just return true if the user has the role of `administrator`.
+In the policy itself, I immediately thought that an `administrator` would be able to do everything. So, I immediately remembered the `before` [Policy Filter](https://laravel.com/docs/authorization#authorizing-actions-using-policies) method. In this method, we will just return `true` if the user has the role of `administrator`.
 
-For other CRUD methods, I thought about what check needs to be done. And it's very simple, we just need to check that role is the `Company Owner`, and that the users' company is the company in which he tries to do the action.
+I thought about what check needs to be done for other CRUD methods. And it's very simple: we just need to check that role is the `Company Owner` and that the user's company is where he tries to do the action.
 
 So, the whole policy code is below.
 
@@ -173,9 +173,9 @@ class CompanyUserPolicy
 }
 ```
 
-Next, in the `CompanyUserController` we need to do the `authorize` check for each CRUD action. There are a couple of ways to do that but I will use the [`authorize`](https://laravel.com/docs/authorization#via-controller-helpers) method.
+Next, in the `CompanyUserController`, we need to do the `authorize` check for each CRUD action. There are a couple of ways to do that, but I will use the [`authorize`](https://laravel.com/docs/authorization#via-controller-helpers) method.
 
-> For other authorizing ways check the [official documentation](https://laravel.com/docs/authorization#authorizing-actions-using-policies).
+> For other authorizing ways, check the [official documentation](https://laravel.com/docs/authorization#authorizing-actions-using-policies).
 
 **app/Http/Controllers/CompanyUserController.php**:
 ```php
@@ -225,7 +225,7 @@ class CompanyUserController extends Controller
 }
 ```
 
-Great! Now users with the role of `Company Owner` can create new users for their company and cannot do any CRUD actions for other companies.
+Great! Now users with the `Company Owner` role can create new users for their company and cannot do any CRUD actions for other companies.
 
 ---
 
