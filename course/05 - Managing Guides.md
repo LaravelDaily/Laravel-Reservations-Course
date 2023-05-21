@@ -1,7 +1,8 @@
-Before implementing the creation of the users with the role of `Guide` we asked the client some questions again.
+Before implementing the creation of the users with the role of `Guide`, we asked the client some questions again.
 
-**Q**: Who will be able to manage guides? Only company owners?
-**A**: Yes, only company owners will manage guides for their company.
+**Question**: Who will be able to manage guides? Only company owners?
+**Answer**: Yes, only company owners will manage guides for their company.
+**What it means to us**: No additional changes to the structure are needed.
 
 From this answer, we now know that a lot of code made within the previous CRUD for `Company Owner` can be reused.
 
@@ -9,7 +10,7 @@ From this answer, we now know that a lot of code made within the previous CRUD f
 
 ## Guides CRUD actions
 
-So, as always we need a Controller and to add Routes. Again this controller will be a [Nested Resource](https://laravel.com/docs/controllers#restful-nested-resources).
+So, as always, we need a Controller and to add Routes. Again this Controller will be a [Nested Resource](https://laravel.com/docs/controllers#restful-nested-resources).
 
 ```sh
 php artisan make:controller CompanyGuideController
@@ -27,7 +28,7 @@ Route::middleware('auth')->group(function () {
 });
 ```
 
-For the navigation, because this link will only need to see the user with the `Company Owner` role we will add it below the `Administrators` link in the same `if` statement.
+For the navigation, because this link will only need to see the user with the `Company Owner` role, we will add it below the `Administrators` link in the same `if` statement.
 
 **resources/views/layouts/navigation.blade.php**:
 ```blade
@@ -102,7 +103,7 @@ class UpdateGuideRequest extends FormRequest
 }
 ```
 
-The Controller is almost identical to the `CompanyUserController`. We can even reuse the same Policy for the permissions. Just need to change everything from `users` to `guides`.
+The Controller is almost identical to the `CompanyUserController`. We can even reuse the same Policy for the permissions. We must change everything from `users` to `guides`.
 
 **app/Http/Controllers/CompanyGuideController.php**:
 ```php
@@ -171,7 +172,7 @@ class CompanyGuideController extends Controller
 }
 ```
 
-For the views, because this is again a Nested Controller and belongs to a Company all blade files will be saved in the `resources/views/companies/guides` directory. Here are the blade files for listing, creating, and editing guides.
+For the views, because this is again a Nested Controller and belongs to a Company, all blade files will be saved in the `resources/views/companies/guides` directory. Here are the Blade files for listing, creating, and editing guides.
 
 **resources/views/companies/guides/index.blade.php**:
 ```blade
@@ -355,7 +356,7 @@ Now, we can create the test.
 php artisan make:test CompanyGuideTest
 ```
 
-For what we will test it's identical to the `CompanyUserTest`. We will check if the user with the `Company Owner` role can do CRUD actions for his company and cannot do any for other companies.
+What we will test is identical to the `CompanyUserTest`. We will check if the user with the `Company Owner` role can do CRUD actions for his company and cannot do any for other companies.
 
 **tests/Feature/CompanyGuideTest.php**:
 ```php

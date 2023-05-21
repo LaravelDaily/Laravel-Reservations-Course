@@ -1,10 +1,15 @@
-In this lesson let's move on to build a new feature for managing activities and assigning guides to them. Of course, we will write tests for this feature at the end.
+In this lesson, let's build a new feature for managing activities and assigning guides to them. Of course, we will write tests for this feature at the end.
+
+Here's the list of topics that we'll cover below:
+- Will create the CRUD for activities.
+- Will add authorization for activities using Policies.
+- Will write tests.
 
 ---
 
 ## Activities CRUD Actions
 
-Again, we cannot create CRUD without Controller and Routes.
+Again, we can only create CRUD with Controller and Routes.
 
 ```sh
 php artisan make:controller ActivityController
@@ -53,7 +58,7 @@ As for the navigation link, `Activities` will be visible only for `Company Owner
 
 ![activities navigation link](images/activities-navigation-link.png)
 
-For the validation, again the [Form Requests](https://laravel.com/docs/validation#form-request-validation).
+For the validation, again, the [Form Requests](https://laravel.com/docs/validation#form-request-validation).
 
 ```sh
 php artisan make:request StoreActivityRequest
@@ -106,7 +111,7 @@ class UpdateActivityRequest extends FormRequest
 }
 ```
 
-Now we can add code to the Controller and show the list of activities and both create and edit forms. For storing Blade files we will use the same structure as we used for companies, the `resources/views/activities` directory. For the photo, now it will be just a simple upload stored on a public disk.
+Now we can add code to the Controller, show the list of activities, and create and edit forms. For storing Blade files, we will use the same structure as we used for companies, the `resources/views/activities` directory. For the photo, now it will be just a simple upload stored on a public disk.
 
 **app/Http/Controllers/ActivityController.php**:
 ```php
@@ -479,7 +484,7 @@ class ActivityPolicy
 }
 ```
 
-Next, we need to use this Policy in the Controller. Because here we are using just a simple Resource Controller we can just use the [authorizeResource](https://laravel.com/docs/authorization#authorizing-resource-controllers) method in the controller's constructor.
+Next, we need to use this Policy in the Controller. Because here we are using a simple Resource Controller, we can use the [authorizeResource](https://laravel.com/docs/authorization#authorizing-resource-controllers) method in the Controller's constructor.
 
 **app/Http/Controllers/ActivityController.php**:
 ```php
@@ -498,7 +503,7 @@ class ActivityController extends Controller
 
 ## Tests
 
-As with every feature, we added tests after this one it's no exception. First, because we are working with the `Activity` Model we need to create a Factory for it.
+As with every feature, we added tests. After this one, it's no exception. First, because we are working with the `Activity` Model, we need to create a Factory for it.
 
 ```sh
 php artisan make:factory ActivityFactory
@@ -532,7 +537,7 @@ php artisan make:test ActivityTest
 
 So, what do we need to test here? My first thought, the `Company Owner` needs to do every action only for his company. So, we need to test:
 - For the activities list, the company owner can see only his company's activities and cannot see other companies.
-- For create, edit, and delete it's the same and we have already written similar tests in the `CompanyGuideTest`.
+- For create, edit, and delete, it's the same, and we have already written similar tests in the `CompanyGuideTest`.
 
 **tests/Feature/ActivityTest.php**:
 ```php
@@ -684,4 +689,4 @@ Tests:    7 passed (14 assertions)
 Duration: 0.21s
 ```
 
-Now that we have made some kind of an MVP let's show it to the client.
+Now that we have made some MVP let's show it to the client.

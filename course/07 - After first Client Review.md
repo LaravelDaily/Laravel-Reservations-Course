@@ -1,16 +1,19 @@
-In the lesson, after making some MVPs we sent them to the client for a review. After the client reviews he gave us an answer:
+After making MVP in the last lessons, we sent them to the client for review. After the client reviews, he gave us an answer:
 
-> Why does creating users involve adding passwords for them? Do you want me to send those passwords via email? It's unsafe! Please build the invitation system with randomized links, so they would create their passwords themselves.
+> Why does creating users involve adding passwords for them? Do you want me to send those passwords via email? It's unsafe! Please build the invitation system with randomized links so that they would create their passwords themselves.
 
-How to create users wasn't mentioned. So now of course to do how the client wants using the invitation system means we need to redo the whole logic and tests. And it's our job to tell the client that it will cost more or to refuse to do it.
+How to create users should have been mentioned. So now, of course, we need to redo the logic and tests to do how the client wants to use the invitation system. And it's our job to tell the client it will cost more or refuse to do it.
 
-Now we will do it of course!
+Here's the list of topics that we'll cover below:
+- Sending mail to the invited user.
+- Register the user to the correct company and role from the invitation link.
+- Rewriting old tests and writing new ones.
 
 ---
 
 ## Sending Invitation Mail
 
-So, first, instead of creating the user let's send an invitation mail. For this, we need to save a new Model where we will save the email, invitation token, company ID, and role ID.
+So, first, instead of creating the user, let's send an invitation mail. For this, we need to save a new Model where we will keep the email, invitation token, company ID, and role ID.
 
 ```php
 php artisan make:model Invitation -m
@@ -46,7 +49,7 @@ class Invitation extends Model
 }
 ```
 
-Next, we need to change the form, in both `Company Owner` and `Guides`. We won't be needing the name and passwords.
+Next, we must change the form for `Company Owner` and `Guides` CRUD. We won't need the name and passwords.
 
 **resources/views/companies/users/create.blade.php** & **resources/views/companies/guides/create.blade.php**::
 ```blade
@@ -83,7 +86,7 @@ Next, we need to change the form, in both `Company Owner` and `Guides`. We won't
 
 ![send invitation form](images/send-invitation-form.png)
 
-Also, it means in the Form Request we also need only the email. And we will change the validation method.
+Also, it means we need only the email in the Form Request. And we will change the validation message.
 
 **app/Http/Requests/StoreUserRequest.php** & **app/Http/Requests/StoreGuideRequest.php**
 ```php
@@ -115,7 +118,7 @@ Now, we need to create the [Mail](https://laravel.com/docs/mail).
 php artisan make:mail RegistrationInvite --markdown=emails.invitation
 ```
 
-The Mail will accept the invitation which we will create in the Controller later before sending the Mail. And to the markdown we need to pass the invitation URL.
+The Mail will accept the invitation, which we will create in the Controller later before sending the Mail. And to the markdown, we need to pass the invitation URL.
 
 **app/Mail/RegistrationInvite.php**:
 ```php
@@ -164,7 +167,7 @@ Thanks,<br>
 </x-mail::message>
 ```
 
-Next in the Controller instead of creating a user, we need to create the invitation and send the invite.
+Next, instead of creating a user in the Controller, we need to make and send the invite.
 
 **app/Http/Controllers/CompanyUserController.php**:
 ```php
@@ -228,7 +231,7 @@ class CompanyGuideController extends Controller
 }
 ```
 
-And the invitation email now is sent.
+And the invitation email is now sent.
 
 ![invitation email](images/invitation-email.png)
 
@@ -236,9 +239,9 @@ And the invitation email now is sent.
 
 ## Registering User with Invitation
 
-Now that user can receive the invitation email we need to make the registration part work. It can be done in a couple of ways like adding a hidden field with the token but I chose to do it with [Session](https://laravel.com/docs/session).
+Now that user can receive the invitation email, we need to make the registration part work. This can be done in a couple of ways, like adding a hidden field with the token, but I chose to do it with [Session](https://laravel.com/docs/session).
 
-First, in the `RegisteredUserController` of Laravel Breeze let's put the token into a Session and let's auto-fill the email field.
+First, in the `RegisteredUserController` of Laravel Breeze, let's put the token into a Session and auto-fill the email field.
 
 **app/Http/Controllers/RegisteredUserController.php**:
 ```php
@@ -284,9 +287,9 @@ class RegisteredUserController extends Controller
 
 ![email auto filled from invitation](images/email-auto-filled-from-invitation.png)
 
-All that's left is to check if the session has the `invitation_token` key. If it does, then get the invitation where the token and entered email match, and `registered_at` is null.
+All that's left is to check if the Session has the `invitation_token` key. If it does, get the invitation where the token and entered email match, and `registered_at` is null.
 
-And then when creating the user set the correct `company_id` and `role_id`.
+And then, when creating the user, set the correct `company_id` and `role_id`.
 
 **app/Http/Controllers/RegisteredUserController.php**:
 ```php
@@ -333,7 +336,7 @@ class RegisteredUserController extends Controller
 }
 ```
 
-As you see if we don't find the invitation we throw the validation exception. Let's show the validation message at the start of the registration form.
+If we don't find the invitation, we throw the validation exception. Let's show the validation message at the start of the registration form.
 
 **resources/views/auth/register.blade.php**:
 ```blade
@@ -352,7 +355,7 @@ As you see if we don't find the invitation we throw the validation exception. Le
 
 ## Tests
 
-After changing the whole creation of the user logic we need to also change the tests and add a new one for the registration. But first, let's add a setting that our Seeders would always be run.
+After changing the users' creation logic, we must also change the tests and add a new one for the registration. But first, let's add a setting that our Seeders would always be run.
 
 **tests/TestCase.php**:
 ```php
@@ -364,7 +367,7 @@ abstract class TestCase extends BaseTestCase
 }
 ```
 
-Now for the tests. Instead of testing that user was created we need to test that the invitation was created with the right `company_id` and `role_id` and that the Mail was sent.
+Now for the tests. Instead of testing that user was created, we need to test that the invitation was created with the right `company_id` and `role_id` and that the Mail was sent.
 
 We will create new tests in the `CompanyUserTest` instead of the old `test_admin_can_create_user_for_a_company` and `test_company_owner_can_create_user_to_his_company`.
 
@@ -431,7 +434,7 @@ class CompanyUserTest extends TestCase
 }
 ```
 
-The same goes for the `CompanyGuideTest` test a new one instead of `test_company_owner_can_create_guide_to_his_company`.
+The same goes for the `CompanyGuideTest` test, a new one instead of `test_company_owner_can_create_guide_to_his_company`.
 
 **tests/Feature/CompanyGuideTest.php**:
 ```php
@@ -471,7 +474,7 @@ class CompanyGuideTest extends TestCase
 }
 ```
 
-That's it for the invitation tests. Now let's add new tests for the registrations. We will test that the user is registered with the correct company and get the correct role.
+That's it for the invitation tests. Now let's add new tests for the registrations. We will test that the user is registered with the right company and get the correct role.
 
 **tests/Feature/Auth/RegistrationTest.php**:
 ```php
