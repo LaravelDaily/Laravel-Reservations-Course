@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Enums\Role;
-use App\Models\Invitation;
+use App\Models\UserInvitation;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Providers\RouteServiceProvider;
@@ -30,7 +30,7 @@ class RegisteredUserController extends Controller
 
             session()->put('invitation_token', $token);
 
-            $invitation = Invitation::where('token', $token)
+            $invitation = UserInvitation::where('token', $token)
                 ->whereNull('registered_at')
                 ->firstOrFail();
 
@@ -54,7 +54,7 @@ class RegisteredUserController extends Controller
         ]);
 
         if ($request->session()->get('invitation_token')) {
-            $invitation = Invitation::where('token', $request->session()->get('invitation_token'))
+            $invitation = UserInvitation::where('token', $request->session()->get('invitation_token'))
                 ->where('email', $request->email)
                 ->whereNull('registered_at')
                 ->firstOr(fn() => throw ValidationException::withMessages(['invitation' => 'Invitation link does not match the email']));

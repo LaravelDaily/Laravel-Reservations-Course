@@ -2,7 +2,7 @@ After making MVP in the last lessons, we sent them to the client for review. Aft
 
 > Why does creating users involve adding passwords for them? Do you want me to send those passwords via email? It's unsafe! Please build the invitation system with randomized links so that they would create their passwords themselves.
 
-How to create users should have been mentioned. So now, of course, we need to redo the logic and tests to do how the client wants to use the invitation system. And it's our job to tell the client it will cost more or refuse to do it.
+It seems like we did not discuss the user creation flow enough. This means that we have to modify it, which will introduce delays. Of course, we could talk with the Client, but a lesson learned for next time - we should be more careful when looking at specifications.
 
 Here's the list of topics that we'll cover below:
 - Sending mail to the invited user.
@@ -16,14 +16,14 @@ Here's the list of topics that we'll cover below:
 So, first, instead of creating the user, let's send an invitation mail. For this, we need to save a new Model where we will keep the email, invitation token, company ID, and role ID.
 
 ```php
-php artisan make:model Invitation -m
+php artisan make:model UserInvitation -m
 ```
 
 **database/migrations/xxxx_create_intivations_table.php**:
 ```php
 public function up(): void
 {
-    Schema::create('invitations', function (Blueprint $table) {
+    Schema::create('user_invitations', function (Blueprint $table) {
         $table->increments('id');
         $table->string('email')->unique();
         $table->string('token', 36)->unique()->nullable();
@@ -35,9 +35,9 @@ public function up(): void
 }
 ```
 
-**app/Models/Invitation.php**:
+**app/Models/UserInvitation.php**:
 ```php
-class Invitation extends Model
+class UserInvitation extends Model
 {
     protected $fillable = [
         'email',
@@ -51,7 +51,106 @@ class Invitation extends Model
 
 Next, we must change the form for `Company Owner` and `Guides` CRUD. We won't need the name and passwords.
 
-**resources/views/companies/users/create.blade.php** & **resources/views/companies/guides/create.blade.php**::
+**resources/views/companies/users/create.blade.php**:
+```blade
+//
+@csrf
+
+<div> {{-- [tl! remove:start] }}
+    <x-input-label for="name" value="Name" />
+    <x-text-input id="name" name="name" value="{{ old('name') }}" type="text" class="block mt-1 w-full" />
+    <x-input-error :messages="$errors->get('name')" class="mt-2" />
+</div>
+
+<div class="mt-4"> {{-- [tl! remove:end] }}
+<div>  {{-- [tl! ++] }}
+    <x-input-label for="email" value="Email" />
+    <x-text-input id="email" name="email" value="{{ old('email') }}" type="text" class="block mt-1 w-full" />
+    <x-input-error :messages="$errors->get('email')" class="mt-2" />
+</div>
+
+<div class="mt-4"> {{-- [tl! remove:start] }}
+    <x-input-label for="password" value="Password" />
+    <x-text-input id="password" name="password" value="{{ old('password') }}" type="password" class="block mt-1 w-full" />
+    <x-input-error :messages="$errors->get('password')" class="mt-2" />
+</div> {{-- [tl! remove:end] }}
+
+<div class="mt-4">
+    <x-primary-button>
+        Save {{-- [tl! --] }}
+        Send Invitation {{-- [tl! ++] }}
+    </x-primary-button>
+</div>
+//
+```
+
+**resources/views/companies/guides/create.blade.php**:
+```blade
+//
+@csrf
+
+<div> {{-- [tl! remove:start] }}
+    <x-input-label for="name" value="Name" />
+    <x-text-input id="name" name="name" value="{{ old('name') }}" type="text" class="block mt-1 w-full" />
+    <x-input-error :messages="$errors->get('name')" class="mt-2" />
+</div>
+
+<div class="mt-4"> {{-- [tl! remove:end] }}
+<div>  {{-- [tl! ++] }}
+    <x-input-label for="email" value="Email" />
+    <x-text-input id="email" name="email" value="{{ old('email') }}" type="text" class="block mt-1 w-full" />
+    <x-input-error :messages="$errors->get('email')" class="mt-2" />
+</div>
+
+<div class="mt-4"> {{-- [tl! remove:start] }}
+    <x-input-label for="password" value="Password" />
+    <x-text-input id="password" name="password" value="{{ old('password') }}" type="password" class="block mt-1 w-full" />
+    <x-input-error :messages="$errors->get('password')" class="mt-2" />
+</div> {{-- [tl! remove:end] }}
+
+<div class="mt-4">
+    <x-primary-button>
+        Save {{-- [tl! --] }}
+        Send Invitation {{-- [tl! ++] }}
+    </x-primary-button>
+</div>
+//
+```
+
+**resources/views/companies/users/edit.blade.php**:
+```blade
+//
+@csrf
+
+<div> {{-- [tl! remove:start] }}
+    <x-input-label for="name" value="Name" />
+    <x-text-input id="name" name="name" value="{{ old('name') }}" type="text" class="block mt-1 w-full" />
+    <x-input-error :messages="$errors->get('name')" class="mt-2" />
+</div>
+
+<div class="mt-4"> {{-- [tl! remove:end] }}
+<div>  {{-- [tl! ++] }}
+    <x-input-label for="email" value="Email" />
+    <x-text-input id="email" name="email" value="{{ old('email') }}" type="text" class="block mt-1 w-full" />
+    <x-input-error :messages="$errors->get('email')" class="mt-2" />
+</div>
+
+<div class="mt-4"> {{-- [tl! remove:start] }}
+    <x-input-label for="password" value="Password" />
+    <x-text-input id="password" name="password" value="{{ old('password') }}" type="password" class="block mt-1 w-full" />
+    <x-input-error :messages="$errors->get('password')" class="mt-2" />
+</div> {{-- [tl! remove:end] }}
+
+<div class="mt-4">
+    <x-primary-button>
+        Save {{-- [tl! --] }}
+        Send Invitation {{-- [tl! ++] }}
+    </x-primary-button>
+</div>
+//
+```
+
+**resources/views/companies/guides/edit.blade.php**:
 ```blade
 //
 @csrf
@@ -86,9 +185,9 @@ Next, we must change the form for `Company Owner` and `Guides` CRUD. We won't ne
 
 ![send invitation form](images/send-invitation-form.png)
 
-Also, it means we need only the email in the Form Request. The email must also check uniqueness in the `invitations` table instead of the `users` table. And we will change the validation message.
+Also, it means we need only the email in the Form Request. The email must also check uniqueness in the `user_invitations` table instead of the `users` table. And we will change the validation message.
 
-**app/Http/Requests/StoreUserRequest.php** & **app/Http/Requests/StoreGuideRequest.php**
+**app/Http/Requests/StoreUserRequest.php**:
 ```php
 class StoreGuideRequest extends FormRequest
 {
@@ -100,7 +199,32 @@ class StoreGuideRequest extends FormRequest
             'name' => ['required', 'string'], // [tl! remove:start]
             'email' => ['required', 'email', 'unique:users,email'],
             'password' => ['required', Rules\Password::defaults()], // [tl! remove:end]
-            'email' => ['required', 'email', 'unique:invitations,email'], // [tl! ++]
+            'email' => ['required', 'email', 'unique:user_invitations,email'], // [tl! ++]
+        ];
+    }
+
+    public function messages(): array // [tl! add:start]
+    {
+        return [
+            'email.unique' => 'Invitation with this email address already requested.'
+        ];
+    } // [tl! add:end]
+}
+```
+
+**app/Http/Requests/StoreGuideRequest.php**:
+```php
+class StoreGuideRequest extends FormRequest
+{
+    // ...
+
+    public function rules(): array
+    {
+        return [
+            'name' => ['required', 'string'], // [tl! remove:start]
+            'email' => ['required', 'email', 'unique:users,email'],
+            'password' => ['required', Rules\Password::defaults()], // [tl! remove:end]
+            'email' => ['required', 'email', 'unique:user_invitations,email'], // [tl! ++]
         ];
     }
 
@@ -122,14 +246,15 @@ php artisan make:mail RegistrationInvite --markdown=emails.invitation
 The Mail will accept the invitation, which we will create in the Controller later before sending the Mail. And to the markdown, we need to pass the invitation URL.
 
 **app/Mail/RegistrationInvite.php**:
+
 ```php
-use App\Models\Invitation;
+use App\Models\UserInvitation;
 
 class RegistrationInvite extends Mailable
 {
     use Queueable, SerializesModels;
 
-    public function __construct(private readonly Invitation $invitation)
+    public function __construct(private readonly UserInvitation $invitation)
     {}
 
     public function envelope(): Envelope
@@ -171,10 +296,11 @@ Thanks,<br>
 Next, instead of creating a user in the Controller, we need to make and send the invite.
 
 **app/Http/Controllers/CompanyUserController.php**:
+
 ```php
-use App\Models\Invitation;
+use App\Models\UserInvitation;
 use Illuminate\Support\Str;
-use App\Mail\RegistrationInvite;
+use App\Mail\UserRegistrationInvite;
 use Illuminate\Support\Facades\Mail;
 
 class CompanyUserController extends Controller
@@ -185,14 +311,14 @@ class CompanyUserController extends Controller
     {
         $this->authorize('create', $company);
 
-        $invitation = Invitation::create([
+        $invitation = UserInvitation::create([
             'email' => $request->input('email'),
             'token' => Str::uuid(),
             'company_id' => $company->id,
             'role_id' => Role::COMPANY_OWNER->value,
         ]);
 
-        Mail::to($request->input('email'))->send(new RegistrationInvite($invitation));
+        Mail::to($request->input('email'))->send(new UserRegistrationInvite($invitation));
 
         return to_route('companies.users.index', $company);
     }
@@ -202,10 +328,11 @@ class CompanyUserController extends Controller
 ```
 
 **app/Http/Controllers/CompanyGuideController.php**:
+
 ```php
-use App\Models\Invitation;
+use App\Models\UserInvitation;
 use Illuminate\Support\Str;
-use App\Mail\RegistrationInvite;
+use App\Mail\UserRegistrationInvite;
 use Illuminate\Support\Facades\Mail;
 
 class CompanyGuideController extends Controller
@@ -216,14 +343,14 @@ class CompanyGuideController extends Controller
     {
         $this->authorize('create', $company);
 
-        $invitation = Invitation::create([
+        $invitation = UserInvitation::create([
             'email' => $request->input('email'),
             'token' => Str::uuid(),
             'company_id' => $company->id,
             'role_id' => Role::GUIDE->value,
         ]);
 
-        Mail::to($request->input('email'))->send(new RegistrationInvite($invitation));
+        Mail::to($request->input('email'))->send(new UserRegistrationInvite($invitation));
 
         return to_route('companies.guides.index', $company);
     }
@@ -245,8 +372,9 @@ Now that user can receive the invitation email, we need to make the registration
 First, in the `RegisteredUserController` of Laravel Breeze, let's put the token into a Session and auto-fill the email field.
 
 **app/Http/Controllers/RegisteredUserController.php**:
+
 ```php
-use App\Models\Invitation;
+use App\Models\UserInvitation;
 
 class RegisteredUserController extends Controller
 {
@@ -259,7 +387,7 @@ class RegisteredUserController extends Controller
 
             session()->put('invitation_token', $token);
 
-            $invitation = Invitation::where('token', $token)
+            $invitation = UserInvitation::where('token', $token)
                 ->whereNull('registered_at')
                 ->firstOrFail();
 
@@ -308,7 +436,7 @@ class RegisteredUserController extends Controller
         ]);
 
         if ($request->session()->get('invitation_token')) { // [tl! add:start]
-            $invitation = Invitation::where('token', $request->session()->get('invitation_token'))
+            $invitation = UserInvitation::where('token', $request->session()->get('invitation_token'))
                 ->where('email', $request->email)
                 ->whereNull('registered_at')
                 ->firstOr(fn() => throw ValidationException::withMessages(['invitation' => 'Invitation link does not match the email']));
@@ -373,8 +501,9 @@ Now for the tests. Instead of testing that user was created, we need to test tha
 We will create new tests in the `CompanyUserTest` instead of the old `test_admin_can_create_user_for_a_company` and `test_company_owner_can_create_user_to_his_company`.
 
 **tests/Feature/CompanyUserTest.php**:
+
 ```php
-use App\Mail\RegistrationInvite;
+use App\Mail\UserRegistrationInvite;
 use Illuminate\Support\Facades\Mail;
 
 class CompanyUserTest extends TestCase
@@ -394,16 +523,32 @@ class CompanyUserTest extends TestCase
             'email' => 'test@test.com',
         ]);
 
-        Mail::assertSent(RegistrationInvite::class);
+        Mail::assertSent(UserRegistrationInvite::class);
 
         $response->assertRedirect(route('companies.users.index', $company->id));
 
-        $this->assertDatabaseHas('invitations', [
+        $this->assertDatabaseHas('user_invitations', [
             'email' => 'test@test.com',
             'registered_at' => null,
             'company_id' => $company->id,
             'role_id' => Role::COMPANY_OWNER->value,
         ]);
+    }
+
+    public function test_invitation_can_be_sent_only_once_for_user()
+    {
+        $company = Company::factory()->create();
+        $user = User::factory()->admin()->create();
+
+        $this->actingAs($user)->post(route('companies.users.store', $company->id), [
+            'email' => 'test@test.com',
+        ]);
+
+        $response = $this->actingAs($user)->post(route('companies.users.store', $company->id), [
+            'email' => 'test@test.com',
+        ]);
+
+        $response->assertInvalid(['email' => 'Invitation with this email address already requested.']);
     }
 
     // ...
@@ -419,11 +564,11 @@ class CompanyUserTest extends TestCase
             'email' => 'test@test.com',
         ]);
 
-        Mail::assertSent(RegistrationInvite::class);
+        Mail::assertSent(UserRegistrationInvite::class);
 
         $response->assertRedirect(route('companies.users.index', $company->id));
 
-        $this->assertDatabaseHas('invitations', [
+        $this->assertDatabaseHas('user_invitations', [
             'email' => 'test@test.com',
             'registered_at' => null,
             'company_id' => $company->id,
@@ -438,8 +583,9 @@ class CompanyUserTest extends TestCase
 The same goes for the `CompanyGuideTest` test, a new one instead of `test_company_owner_can_create_guide_to_his_company`.
 
 **tests/Feature/CompanyGuideTest.php**:
+
 ```php
-use App\Mail\RegistrationInvite;
+use App\Mail\UserRegistrationInvite;
 use Illuminate\Support\Facades\Mail;
 
 class CompanyGuideTest extends TestCase
@@ -459,16 +605,32 @@ class CompanyGuideTest extends TestCase
             'email' => 'test@test.com',
         ]);
 
-        Mail::assertSent(RegistrationInvite::class);
+        Mail::assertSent(UserRegistrationInvite::class);
 
         $response->assertRedirect(route('companies.guides.index', $company->id));
 
-        $this->assertDatabaseHas('invitations', [
+        $this->assertDatabaseHas('user_invitations', [
             'email' => 'test@test.com',
             'registered_at' => null,
             'company_id' => $company->id,
             'role_id' => Role::GUIDE->value,
         ]);
+    }
+
+    public function test_invitation_can_be_sent_only_once_for_user()
+    {
+        $company = Company::factory()->create();
+        $user = User::factory()->companyOwner()->create(['company_id' => $company]);
+
+        $this->actingAs($user)->post(route('companies.guides.store', $company->id), [
+            'email' => 'test@test.com',
+        ]);
+
+        $response = $this->actingAs($user)->post(route('companies.guides.store', $company->id), [
+            'email' => 'test@test.com',
+        ]);
+
+        $response->assertInvalid(['email' => 'Invitation with this email address already requested.']);
     }
 
     // ...
@@ -478,11 +640,12 @@ class CompanyGuideTest extends TestCase
 That's it for the invitation tests. Now let's add new tests for the registrations. We will test that the user is registered with the right company and get the correct role.
 
 **tests/Feature/Auth/RegistrationTest.php**:
+
 ```php
 use App\Enums\Role;
 use App\Models\User;
 use App\Models\Company;
-use App\Models\Invitation;
+use App\Models\UserInvitation;
 use Illuminate\Support\Facades\Auth;
 
 class RegistrationTest extends TestCase
@@ -498,7 +661,7 @@ class RegistrationTest extends TestCase
             'email' => 'test@test.com',
         ]);
 
-        $invitation = Invitation::where('email', 'test@test.com')->first();
+        $invitation = UserInvitation::where('email', 'test@test.com')->first();
 
         Auth::logout();
 
@@ -530,7 +693,7 @@ class RegistrationTest extends TestCase
             'email' => 'test@test.com',
         ]);
 
-        $invitation = Invitation::where('email', 'test@test.com')->first();
+        $invitation = UserInvitation::where('email', 'test@test.com')->first();
 
         Auth::logout();
 
@@ -557,11 +720,4 @@ class RegistrationTest extends TestCase
 
 Let's check all the tests. Great, they are all green!
 
-```
-> php artisan test --compact
-
-.......................................................
-
-Tests:    55 passed (123 assertions)
-Duration: 1.63s
-```
+![after client review tests](images/after-client-review-tests.png)

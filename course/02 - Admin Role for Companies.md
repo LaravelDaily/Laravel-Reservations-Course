@@ -30,13 +30,14 @@ We will abort the request in the Middleware if the user doesn't have an `adminis
 
 **App/Http/Middleware/IsAdminMiddleware.php**:
 ```php
+use App\Enums\Role;
 use Symfony\Component\HttpFoundation\Response;
 
 class IsAdminMiddleware
 {
     public function handle(Request $request, Closure $next): Response
     {
-        abort_if($request->user()->role_id !== 1, Response::HTTP_FORBIDDEN);
+        abort_if($request->user()->role_id !== Role::ADMINISTRATOR->value, Response::HTTP_FORBIDDEN);
 
         return $next($request);
     }
@@ -206,13 +207,4 @@ So, what do we do in these tests?
 - Then, acting as a newly-created user, we go to the `companies.index` route.
 - Ant last, we check the response. The administrator will get a response HTTP status of `200 OK`, and other users will receive an HTTP status of `403 Forbidden`.
 
-```
-> php artisan test --filter=CompanyTest
-
-PASS  Tests\Feature\CompanyTest
-✓ admin user can access companies index page 0.09s  
-✓ non admin user cannot access companies index page 0.01s  
-
-Tests:    2 passed (2 assertions)
-Duration: 0.13s
-```
+![company tests](images/company-tests.png)

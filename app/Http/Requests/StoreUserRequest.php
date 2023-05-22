@@ -23,7 +23,7 @@ class StoreUserRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'email' => ['required', 'email', 'unique:invitations,email'],
+            'email' => ['required', 'email', 'unique:user_invitations,email'],
         ];
     }
 

@@ -488,21 +488,6 @@ class CompanyGuideTest extends TestCase
 }
 ```
 
-```
-> php artisan test --filter=CompanyGuideTest
-
-PASS  Tests\Feature\CompanyGuideTest
-✓ company owner can view his companies guides 0.09s  
-✓ company owner cannot view other companies guides 0.01s  
-✓ company owner can create guide to his company 0.02s  
-✓ company owner cannot create guide to other company 0.01s  
-✓ company owner can edit guide for his company 0.01s  
-✓ company owner cannot edit guide for other company 0.01s  
-✓ company owner can delete guide for his company 0.01s  
-✓ company owner cannot delete guide for other company 0.02s  
-
-Tests:    8 passed (15 assertions)
-Duration: 0.22s
-```
+![](images/managing-guides-tests.png)
 
 Great! It's all green.

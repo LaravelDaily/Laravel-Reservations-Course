@@ -545,6 +545,8 @@ use Tests\TestCase;
 use App\Models\User;
 use App\Models\Company;
 use App\Models\Activity;
+use Illuminate\Http\UploadedFile;  
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class ActivityTest extends TestCase
@@ -597,6 +599,52 @@ class ActivityTest extends TestCase
             'start_time' => '2023-09-01 10:00',
             'price' => 999900,
         ]);
+    }
+
+    public function test_can_upload_image()
+    {
+        Storage::fake('activities');
+
+        $company = Company::factory()->create();
+        $user = User::factory()->companyOwner()->create(['company_id' => $company->id]);
+        $guide = User::factory()->guide()->create();
+
+        $file = UploadedFile::fake()->image('avatar.jpg');
+
+        $this->actingAs($user)->post(route('activities.store'), [
+            'name' => 'activity',
+            'description' => 'description',
+            'start_time' => '2023-09-01 10:00',
+            'price' => 9999,
+            'guides' => $guide->id,
+            'image' => $file,
+        ]);
+
+        Storage::disk('public')->assertExists('activities/' . $file->hashName());
+    }
+
+    public function test_cannon_upload_non_image_file()
+    {
+        Storage::fake('activities');
+
+        $company = Company::factory()->create();
+        $user = User::factory()->companyOwner()->create(['company_id' => $company->id]);
+        $guide = User::factory()->guide()->create();
+
+        $file = UploadedFile::fake()->create('document.pdf', 2000, 'application/pdf');
+
+        $response = $this->actingAs($user)->post(route('activities.store'), [
+            'name' => 'activity',
+            'description' => 'description',
+            'start_time' => '2023-09-01 10:00',
+            'price' => 9999,
+            'guides' => $guide->id,
+            'image' => $file,
+        ]);
+
+        $response->assertSessionHasErrors(['image']);
+
+        Storage::disk('public')->assertMissing('activities/' . $file->hashName());
     }
 
     public function test_company_owner_can_edit_activity()
@@ -671,22 +719,6 @@ class ActivityTest extends TestCase
 }
 ```
 
-And it's green!
-
-```
-> php artisan test --filter=ActivityTest 
-
-PASS  Tests\Feature\ActivityTest
-✓ company owner can view activities page 0.09s  
-✓ company owner can see only his companies activities 0.02s  
-✓ company owner can create activity 0.02s  
-✓ company owner can edit activity 0.01s  
-✓ company owner cannot edit activity for other company 0.01s  
-✓ company owner can delete activity 0.01s  
-✓ company owner cannot delete activity for other company 0.02s  
-
-Tests:    7 passed (14 assertions)
-Duration: 0.21s
-```
+![activities tests](images/activities-tests.png)
 
 Now that we have made some MVP let's show it to the client.

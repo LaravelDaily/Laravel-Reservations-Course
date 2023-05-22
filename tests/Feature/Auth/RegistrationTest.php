@@ -5,7 +5,7 @@ namespace Tests\Feature\Auth;
 use App\Enums\Role;
 use App\Models\User;
 use App\Models\Company;
-use App\Models\Invitation;
+use App\Models\UserInvitation;
 use Illuminate\Support\Facades\Auth;
 use App\Providers\RouteServiceProvider;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -44,7 +44,7 @@ class RegistrationTest extends TestCase
             'email' => 'test@test.com',
         ]);
 
-        $invitation = Invitation::where('email', 'test@test.com')->first();
+        $invitation = UserInvitation::where('email', 'test@test.com')->first();
 
         Auth::logout();
 
@@ -76,7 +76,7 @@ class RegistrationTest extends TestCase
             'email' => 'test@test.com',
         ]);
 
-        $invitation = Invitation::where('email', 'test@test.com')->first();
+        $invitation = UserInvitation::where('email', 'test@test.com')->first();
 
         Auth::logout();
 

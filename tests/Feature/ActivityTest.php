@@ -6,6 +6,8 @@ use Tests\TestCase;
 use App\Models\User;
 use App\Models\Company;
 use App\Models\Activity;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class ActivityTest extends TestCase
@@ -58,6 +60,52 @@ class ActivityTest extends TestCase
             'start_time' => '2023-09-01 10:00',
             'price' => 999900,
         ]);
+    }
+
+    public function test_can_upload_image()
+    {
+        Storage::fake('activities');
+
+        $company = Company::factory()->create();
+        $user = User::factory()->companyOwner()->create(['company_id' => $company->id]);
+        $guide = User::factory()->guide()->create();
+
+        $file = UploadedFile::fake()->image('avatar.jpg');
+
+        $this->actingAs($user)->post(route('activities.store'), [
+            'name' => 'activity',
+            'description' => 'description',
+            'start_time' => '2023-09-01 10:00',
+            'price' => 9999,
+            'guides' => $guide->id,
+            'image' => $file,
+        ]);
+
+        Storage::disk('public')->assertExists('activities/' . $file->hashName());
+    }
+
+    public function test_cannon_upload_non_image_file()
+    {
+        Storage::fake('activities');
+
+        $company = Company::factory()->create();
+        $user = User::factory()->companyOwner()->create(['company_id' => $company->id]);
+        $guide = User::factory()->guide()->create();
+
+        $file = UploadedFile::fake()->create('document.pdf', 2000, 'application/pdf');
+
+        $response = $this->actingAs($user)->post(route('activities.store'), [
+            'name' => 'activity',
+            'description' => 'description',
+            'start_time' => '2023-09-01 10:00',
+            'price' => 9999,
+            'guides' => $guide->id,
+            'image' => $file,
+        ]);
+
+        $response->assertSessionHasErrors(['image']);
+
+        Storage::disk('public')->assertMissing('activities/' . $file->hashName());
     }
 
     public function test_company_owner_can_edit_activity()

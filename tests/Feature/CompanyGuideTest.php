@@ -5,7 +5,7 @@ namespace Tests\Feature;
 use App\Enums\Role;
 use App\Models\User;
 use App\Models\Company;
-use App\Mail\RegistrationInvite;
+use App\Mail\UserRegistrationInvite;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
@@ -49,16 +49,32 @@ class CompanyGuideTest extends TestCase
             'email' => 'test@test.com',
         ]);
 
-        Mail::assertSent(RegistrationInvite::class);
+        Mail::assertSent(UserRegistrationInvite::class);
 
         $response->assertRedirect(route('companies.guides.index', $company->id));
 
-        $this->assertDatabaseHas('invitations', [
+        $this->assertDatabaseHas('user_invitations', [
             'email' => 'test@test.com',
             'registered_at' => null,
             'company_id' => $company->id,
             'role_id' => Role::GUIDE->value,
         ]);
+    }
+
+    public function test_invitation_can_be_sent_only_once_for_user()
+    {
+        $company = Company::factory()->create();
+        $user = User::factory()->companyOwner()->create(['company_id' => $company]);
+
+        $this->actingAs($user)->post(route('companies.guides.store', $company->id), [
+            'email' => 'test@test.com',
+        ]);
+
+        $response = $this->actingAs($user)->post(route('companies.guides.store', $company->id), [
+            'email' => 'test@test.com',
+        ]);
+
+        $response->assertInvalid(['email' => 'Invitation with this email address already requested.']);
     }
 
     public function test_company_owner_cannot_create_guide_to_other_company()

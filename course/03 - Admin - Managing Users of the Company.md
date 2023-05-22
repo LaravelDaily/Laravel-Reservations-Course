@@ -490,15 +490,5 @@ class CompanyUserTest extends TestCase
 }
 ```
 
-```
-> php artisan test --filter=CompanyUserTest                                                                                                      
+![](images/admin-manages-users-tests.png)
 
-PASS  Tests\Feature\CompanyUserTest
-✓ admin can access company users page 0.09s  
-✓ admin can create user for a company 0.02s  
-✓ admin can edit user for a company 0.01s  
-✓ admin can delete user for a company 0.01s  
-
-Tests:    4 passed (10 assertions)
-Duration: 0.16s
-```

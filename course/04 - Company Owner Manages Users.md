@@ -128,7 +128,7 @@ class AuthServiceProvider extends ServiceProvider
 }
 ```
 
-In the policy itself, I immediately thought that an `administrator` would be able to do everything. So, I immediately remembered the `before` [Policy Filter](https://laravel.com/docs/authorization#authorizing-actions-using-policies) method. In this method, we will just return `true` if the user has the role of `administrator`.
+In the policy itself, I immediately thought that an `administrator` would be able to do everything. So, I remembered the `before` [Policy Filter](https://laravel.com/docs/authorization#authorizing-actions-using-policies) method. In this method, we will just return `true` if the user has the role of `administrator`.
 
 I thought about what check needs to be done for other CRUD methods. And it's very simple: we just need to check that role is the `Company Owner` and that the user's company is where he tries to do the action.
 
@@ -394,25 +394,6 @@ class CompanyUserTest extends TestCase
 }
 ```
 
-```
-> php artisan test --filter=CompanyUserTest
-
-PASS  Tests\Feature\CompanyUserTest
-✓ admin can access company users page 0.09s  
-✓ admin can create user for a company 0.02s  
-✓ admin can edit user for a company 0.01s  
-✓ admin can delete user for a company 0.01s  
-✓ company owner can view his companies users 0.02s  
-✓ company owner cannot view other companies users 0.01s  
-✓ company owner can create user to his company 0.01s  
-✓ company owner cannot create user to other company 0.02s  
-✓ company owner can edit user for his company 0.01s  
-✓ company owner cannot edit user for other company 0.01s  
-✓ company owner can delete user for his company 0.01s  
-✓ company owner cannot delete user for other company 0.01s  
-
-Tests:    12 passed (25 assertions)
-Duration: 0.28s
-```
+![](images/company-owner-manages-users-tests.png)
 
 Good. All the tests passed!

@@ -2,7 +2,7 @@
 
 namespace App\Mail;
 
-use App\Models\Invitation;
+use App\Models\UserInvitation;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;
@@ -10,14 +10,14 @@ use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
 
-class RegistrationInvite extends Mailable
+class UserRegistrationInvite extends Mailable
 {
     use Queueable, SerializesModels;
 
     /**
      * Create a new message instance.
      */
-    public function __construct(private readonly Invitation $invitation)
+    public function __construct(private readonly UserInvitation $invitation)
     {}
 
     /**
