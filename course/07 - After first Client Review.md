@@ -86,7 +86,7 @@ Next, we must change the form for `Company Owner` and `Guides` CRUD. We won't ne
 
 ![send invitation form](images/send-invitation-form.png)
 
-Also, it means we need only the email in the Form Request. And we will change the validation message.
+Also, it means we need only the email in the Form Request. The email must also check uniqueness in the `invitations` table instead of the `users` table. And we will change the validation message.
 
 **app/Http/Requests/StoreUserRequest.php** & **app/Http/Requests/StoreGuideRequest.php**
 ```php
@@ -97,9 +97,10 @@ class StoreGuideRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name' => ['required', 'string'], // [tl! --]
+            'name' => ['required', 'string'], // [tl! remove:start]
             'email' => ['required', 'email', 'unique:users,email'],
-            'password' => ['required', Rules\Password::defaults()], // [tl! --]
+            'password' => ['required', Rules\Password::defaults()], // [tl! remove:end]
+            'email' => ['required', 'email', 'unique:invitations,email'], // [tl! ++]
         ];
     }
 
