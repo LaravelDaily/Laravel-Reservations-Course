@@ -1,4 +1,4 @@
-In this lesson, let's build a new feature for managing activities and assigning guides to them. Of course, we will write tests for this feature at the end.
+In this lesson, let's build a new feature for managing **activities** and **assigning guides** to them. Of course, we will write tests for this feature at the end.
 
 Here's the list of topics that we'll cover below:
 - Will create the CRUD for activities.
@@ -26,7 +26,7 @@ Route::middleware('auth')->group(function () {
 });
 ```
 
-As for the navigation link, `Activities` will be visible only for `Company Owner` users. So, we will add a link below the `Guides`.
+As for the navigation, we will add the `Activities` link after the `Guides`.
 
 **resources/views/layouts/navigation.blade.php**:
 ```blade
@@ -111,7 +111,11 @@ class UpdateActivityRequest extends FormRequest
 }
 ```
 
-Now we can add code to the Controller, show the list of activities, and create and edit forms. For storing Blade files, we will use the same structure as we used for companies, the `resources/views/activities` directory. For the photo, now it will be just a simple upload stored on a public disk.
+Now we can add code to the Controller, show the list of activities, and create and edit forms. 
+
+For storing Blade files, we will use the same structure as we used for companies, the `resources/views/activities` directory. 
+
+For the photo, for now, it will be just a simple upload stored on a public disk, without any more complex file manipulations or external packages.
 
 **app/Http/Controllers/ActivityController.php**:
 ```php
@@ -428,7 +432,7 @@ class ActivityController extends Controller
 
 ## Authorization
 
-Of course, only hiding the navigation isn't secure. So keeping consistency we will use Policies. Let's create it and register.
+Of course, only hiding the navigation isn't secure enough. To keep consistency, we will use Policies. Let's create a Policy and register it.
 
 ```sh
 php artisan make:policy ActivityPolicy --model=Activity
@@ -450,7 +454,9 @@ class AuthServiceProvider extends ServiceProvider
 }
 ```
 
-In the Policy for listing and creating the activities we will check if the User has the role of `Company Owner`. For other actions besides checking the role we also need to check if the user tries to do action for his own company.
+In the Policy, for listing and creating the activities, we will check if the user has the `Company Owner` role. 
+
+For other actions, in addition to checking the role, we also need to check if the user tries to perform the action for their own company.
 
 **app/Policies/ActivityPolicity**:
 ```php
@@ -503,7 +509,7 @@ class ActivityController extends Controller
 
 ## Tests
 
-As with every feature, we added tests. After this one, it's no exception. First, because we are working with the `Activity` Model, we need to create a Factory for it.
+As with every feature, we add tests, no exception here. First, because we are working with the `Activity` Model, we need to create a Factory for it.
 
 ```sh
 php artisan make:factory ActivityFactory
@@ -535,9 +541,12 @@ Now the test.
 php artisan make:test ActivityTest
 ```
 
-So, what do we need to test here? My first thought, the `Company Owner` needs to do every action only for his company. So, we need to test:
-- For the activities list, the company owner can see only his company's activities and cannot see other companies.
-- For create, edit, and delete, it's the same, and we have already written similar tests in the `CompanyGuideTest`.
+So, what do we need to test here? Permissions, probably: the `Company Owner` needs to perform every action only for their company. 
+
+So, we need to test the following:
+
+- For the activities list: test that the company owner can see only their company's activities and cannot see other companies.
+- For create, edit, and delete: it's the same, and we have already written similar tests in the `CompanyGuideTest`.
 
 **tests/Feature/ActivityTest.php**:
 ```php
@@ -721,4 +730,6 @@ class ActivityTest extends TestCase
 
 ![activities tests](images/activities-tests.png)
 
-Now that we have made some MVP let's show it to the client.
+I think we created enough functionality to show it to the client and see what they say so far. Such a feedback loop is very important: the earlier we learn about the changes, the less code refactoring we need.
+
+In the next lesson, we will make changes according to the client feedback.
