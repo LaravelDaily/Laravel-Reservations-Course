@@ -1,12 +1,12 @@
 Before implementing the creation of the users with the role of `Guide`, we asked the client one question again.
 
-**Question**: Who will be able to manage guides? Only company owners? Or administrators would need this feature, too?
+**Question**: Who will be able to manage guides? Only company owners? Or would administrators need this feature, too?
 **Answer**: No, only company owners will manage guides for their company.
 **What it means to us**: No additional changes to the structure are needed.
 
 From this answer, we now know that a lot of code made within the previous CRUD for `Company Owner` can be reused. It's the same managing of Users, just with a different role.
 
-This is how projects are usually being created: you uncover feature after feature, looking back if you can reuse previous functionality or need to perform some code refactoring with each "new layer".
+This is how projects are usually created: you uncover feature after feature, looking back to see if you can reuse previous functionality or need to perform some code refactoring with each "new layer".
 
 ---
 
@@ -493,3 +493,7 @@ class CompanyGuideTest extends TestCase
 ![](images/managing-guides-tests.png)
 
 Great! It's all green.
+
+Final notice for this lesson: you probably have noticed that functionality for managing guides is almost identical to managing company owners in the previous lessons. So wouldn't it be better to refactor the code and make it into one CRUD with some parameter like `role_id`?
+
+Yes and no. It depends on the specific situation: in this case, the code parts are identical **for now**. But there's a big possibility that Guides will have their own extra fields and logic in the future, like uploading their photo or CV, languages spoken, etc. So, I decided to keep those CRUDs separate.

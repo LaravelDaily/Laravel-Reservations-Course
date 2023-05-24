@@ -1,19 +1,21 @@
-After making MVP in the last lessons, we sent them to the client for review. After the client reviews, he gave us an answer:
+After making MVP in the last lessons, we sent the result for a client review. Here's one point of feedback they gave us:
 
-> Why does creating users involve adding passwords for them? Do you want me to send those passwords via email? It's unsafe! Please build the invitation system with randomized links so that they would create their passwords themselves.
+> All works well, but why does creating users involve adding passwords for them **manually**? Do you want me to make those passwords and send them via email? It's unsafe. Please build the invitation system with randomized links so the company owners and guides can create their passwords themselves.
 
-It seems like we did not discuss the user creation flow enough. This means that we have to modify it, which will introduce delays. Of course, we could talk with the Client, but a lesson learned for next time - we should be more careful when looking at specifications.
+Good point. So... It seems like we did not discuss the user creation flow enough, so now we need to make changes (*the lesson below*) and discuss potential delays/costs with the client. Lesson learned for next time - discuss how **exactly** features should work in more detail upfront.
 
 Here's the list of topics that we'll cover below:
-- Sending mail to the invited user.
-- Register the user to the correct company and role from the invitation link.
+- Sending an email to the invited user.
+- Use the invitation link to register the user to the correct company and role.
 - Rewriting old tests and writing new ones.
 
 ---
 
 ## Sending Invitation Mail
 
-So, first, instead of creating the user, let's send an invitation mail. For this, we need to save a new Model where we will keep the email, invitation token, company ID, and role ID.
+So, first, instead of creating the user right away, let's send an invitation email. They won't be the system users until they register with their password. 
+
+So, we will create a separate Model called `UserInvitation` where we will keep the email, invitation token, company ID, and role ID.
 
 ```php
 php artisan make:model UserInvitation -m
@@ -293,7 +295,7 @@ Thanks,<br>
 </x-mail::message>
 ```
 
-Next, instead of creating a user in the Controller, we need to make and send the invite.
+Next, in the Controller, instead of creating a user, we send the invitation.
 
 **app/Http/Controllers/CompanyUserController.php**:
 
@@ -367,7 +369,7 @@ And the invitation email is now sent.
 
 ## Registering User with Invitation
 
-Now that user can receive the invitation email, we need to make the registration part work. This can be done in a couple of ways, like adding a hidden field with the token, but I chose to do it with [Session](https://laravel.com/docs/session).
+Now that users can receive the invitation email, we need to make the registration part work. This can be done in a couple of ways, like adding a hidden field with the token, but I chose to do it with [Session](https://laravel.com/docs/session).
 
 First, in the `RegisteredUserController` of Laravel Breeze, let's put the token into a Session and auto-fill the email field.
 
@@ -465,7 +467,7 @@ class RegisteredUserController extends Controller
 }
 ```
 
-If we don't find the invitation, we throw the validation exception. Let's show the validation message at the start of the registration form.
+If we don't find the invitation, we throw the Validation Exception. Let's show the validation message at the start of the registration form.
 
 **resources/views/auth/register.blade.php**:
 ```blade
@@ -484,7 +486,7 @@ If we don't find the invitation, we throw the validation exception. Let's show t
 
 ## Tests
 
-After changing the users' creation logic, we must also change the tests and add a new one for the registration. But first, let's add a setting that our Seeders would always be run.
+After changing the user creation logic, we must also change the tests and add a new one for the registration. But first, let's add a setting in the main `TestCase` that our Seeders would always be executed.
 
 **tests/TestCase.php**:
 ```php
@@ -496,7 +498,7 @@ abstract class TestCase extends BaseTestCase
 }
 ```
 
-Now for the tests. Instead of testing that user was created, we need to test that the invitation was created with the right `company_id` and `role_id` and that the Mail was sent.
+Now for the tests. Instead of testing that user was created, we need to check that the invitation was created with the right `company_id` and `role_id` and that the Mail was sent.
 
 We will create new tests in the `CompanyUserTest` instead of the old `test_admin_can_create_user_for_a_company` and `test_company_owner_can_create_user_to_his_company`.
 
@@ -637,7 +639,7 @@ class CompanyGuideTest extends TestCase
 }
 ```
 
-That's it for the invitation tests. Now let's add new tests for the registrations. We will test that the user is registered with the right company and get the correct role.
+That's it for the invitation tests. Now let's add new tests for the registration. We will test that the user is registered with the right company and get the correct role.
 
 **tests/Feature/Auth/RegistrationTest.php**:
 
