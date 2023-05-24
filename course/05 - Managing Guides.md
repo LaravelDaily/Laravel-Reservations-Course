@@ -1,10 +1,12 @@
-Before implementing the creation of the users with the role of `Guide`, we asked the client some questions again.
+Before implementing the creation of the users with the role of `Guide`, we asked the client one question again.
 
-**Question**: Who will be able to manage guides? Only company owners?
-**Answer**: Yes, only company owners will manage guides for their company.
+**Question**: Who will be able to manage guides? Only company owners? Or administrators would need this feature, too?
+**Answer**: No, only company owners will manage guides for their company.
 **What it means to us**: No additional changes to the structure are needed.
 
-From this answer, we now know that a lot of code made within the previous CRUD for `Company Owner` can be reused.
+From this answer, we now know that a lot of code made within the previous CRUD for `Company Owner` can be reused. It's the same managing of Users, just with a different role.
+
+This is how projects are usually being created: you uncover feature after feature, looking back if you can reuse previous functionality or need to perform some code refactoring with each "new layer".
 
 ---
 
@@ -28,7 +30,7 @@ Route::middleware('auth')->group(function () {
 });
 ```
 
-For the navigation, because this link will only need to see the user with the `Company Owner` role, we will add it below the `Administrators` link in the same `if` statement.
+For the navigation, we will add it after the `Administrators` link in the same `if` statement.
 
 **resources/views/layouts/navigation.blade.php**:
 ```blade
@@ -172,7 +174,7 @@ class CompanyGuideController extends Controller
 }
 ```
 
-For the views, because this is again a Nested Controller and belongs to a Company, all blade files will be saved in the `resources/views/companies/guides` directory. Here are the Blade files for listing, creating, and editing guides.
+For the views, because this is again a Nested Controller and belongs to a Company, all Blade files will be saved in the `resources/views/companies/guides` directory. Here are the Blade files for listing, creating, and editing guides.
 
 **resources/views/companies/guides/index.blade.php**:
 ```blade
