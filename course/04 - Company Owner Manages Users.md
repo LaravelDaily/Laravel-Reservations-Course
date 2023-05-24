@@ -1,10 +1,10 @@
-Now that the administrator can add users to the company, we need to implement a feature where the owner can add users to the company himself.
+Now that the administrator can add users to the company, we need to implement a feature where the **company owners** can add users to the company themselves.
 
 ---
 
 ## Soft Delete Users
 
-First, let's add [`SoftDeletes`](https://laravel.com/docs/eloquent#soft-deleting) for the User Model if someone accidentally deletes a user.
+First, let's add [`SoftDeletes`](https://laravel.com/docs/eloquent#soft-deleting) for the User Model if someone accidentally deletes a user. I personally do that for almost all DB tables in Laravel, my experience showed that such "just in case" paid off in case of emergencies too often.
 
 ```sh
 php artisan make:migration "add soft deletes to users table"
@@ -33,14 +33,12 @@ class User extends Authenticatable
 }
 ```
 
-Because of this added feature, the test `test_user_can_delete_their_account` from Laravel Breeze is now broken.
+Because of this added feature, the test `test_user_can_delete_their_account` from Laravel Breeze is now broken. Let's fix it.
 
 **tests/Feature/ProfileTest**:
 ```php
 class ProfileTest extends TestCase
 {
-// ...
-
     public function test_user_can_delete_their_account(): void
     {
         $user = User::factory()->create();
@@ -59,8 +57,6 @@ class ProfileTest extends TestCase
         $this->assertNull($user->fresh()); // [tl! --]
         $this->assertSoftDeleted($user->fresh()); // [tl! ++]
     }
-    
-// ...
 }
 ```
 
@@ -80,7 +76,11 @@ Duration: 0.15s
 
 ## CRUD Actions
 
-Now, let's move on to the main feature. First, let's show the new item `Administrators` in the navigation, which will be visible only for users with the role of `Company Owner`. Again, for now, I will just add a simple `@if` to check for the `role_id`. Let's add this new menu item under the companies.
+Now, let's move on to the main feature. First, let's show the new item `Administrators` in the navigation, which will be visible only for users with the role of `Company Owner`.
+
+**Notice**: I know it sounds a bit confusing: internally we call those people "Company Owners" role but for them visually a better understandable word is "Administrators".
+
+Let's add this new menu item after the menu "Companies". For permission check, I will just add a simple `@if` to check for the `role_id`.
 
 **resources/views/layouts/navigation.blade.php**:
 ```blade
@@ -104,10 +104,13 @@ Now, let's move on to the main feature. First, let's show the new item `Administ
 // ...
 ```
 
-
 ![administrators for a company navigation](images/administrators-for-a-company-navigation.png)
 
-Now that we have the navigation link let's implement the backend part. So, first, let's create a policy and register it in the `AuthServiceProvider`.
+Now that we have the navigation link, let's implement the backend part. 
+
+We do have the CRUD Controller from the last lesson, but now we need to work on the permissions to "open up" that CRUD to another role. 
+
+So, first, let's create a **Policy** and register it in the `AuthServiceProvider`.
 
 ```sh
 php artisan make:policy CompanyUserPolicy --model=Company
@@ -128,9 +131,16 @@ class AuthServiceProvider extends ServiceProvider
 }
 ```
 
-In the policy itself, I immediately thought that an `administrator` would be able to do everything. So, I remembered the `before` [Policy Filter](https://laravel.com/docs/authorization#authorizing-actions-using-policies) method. In this method, we will just return `true` if the user has the role of `administrator`.
+The Policy class will contain methods to check various permissions: 
 
-I thought about what check needs to be done for other CRUD methods. And it's very simple: we just need to check that role is the `Company Owner` and that the user's company is where he tries to do the action.
+- viewAny
+- create
+- update
+- delete
+
+And we will allow those actions based on user's role `Company Owner` and their company ID.
+
+But for the `administrator` role, we need to just allow **everything**. So, I remembered the `before` [Policy Filter](https://laravel.com/docs/authorization#authorizing-actions-using-policies) method. In this method, we will just return `true` if the user has the role of `administrator`.
 
 So, the whole policy code is below.
 
@@ -267,7 +277,7 @@ class UserFactory extends Factory
 }
 ```
 
-And the tests themself.
+And the tests themselves.
 
 **tests/Feature/CompanyUserTest.php**:
 ```php

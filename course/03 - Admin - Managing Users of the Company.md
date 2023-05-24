@@ -20,7 +20,9 @@ Ideally, these questions would have been asked before even starting to code to a
 
 ## Nested Resource Controller
 
-First, we will implement this User management feature for the users with the `administrator` role. For that, we will use the [Nested Resources](https://laravel.com/docs/controllers#restful-nested-resources) feature.
+First, we will implement this User management feature for the users with the `administrator` role. But instead of doing CRUD for `/users`, we will immediately divide it by company, so URL will be `/companies/[ID]/users`.
+
+For that, we will use the [Nested Resources](https://laravel.com/docs/controllers#restful-nested-resources) feature.
 
 So, first, let's create a Controller and a Route.
 
@@ -40,7 +42,7 @@ Route::middleware('auth')->group(function () {
 });
 ```
 
-> **Notice:** I specifically didn't add `isAdmin` middleware for this route because later it can be reused for users with the `company owner` role. We will only need to restrict access so that users couldn't see other companies. My first thought for this is to use [Policies](https://laravel.com/docs/authorization).
+> **Notice:** I specifically didn't add `isAdmin` middleware for this route because later it can be reused for users with the `company owner` role. We will only need to restrict access so that users couldn't see other companies. My plan for this is to use [Policies](https://laravel.com/docs/authorization).
 
 So now we can add a new action to the companies list page.
 
@@ -165,7 +167,7 @@ And here's the Blade View file to show all the users that belong to the selected
 </x-app-layout>
 ```
 
-This Blade file is very similar to the one we had for listing the companies. The main difference is that because this is a nested View, for every action we also need to pass a company.
+This Blade file is very similar to the one we had for listing the companies. The main difference is that because this is a nested View, for every action we also need to pass the company as a Route parameter.
 
 ---
 
@@ -173,7 +175,7 @@ This Blade file is very similar to the one we had for listing the companies. The
 
 Now that we can show users for a specific company, let's add the **create** and **edit** forms.
 
-For the validation, we will use [Form Requests](https://laravel.com/docs/validation#form-request-validation). So, let's generate them immediately, so we would use them in the Controller.
+For the validation, we will use [Form Requests](https://laravel.com/docs/validation#form-request-validation). Let's generate them immediately, so we would use them in the Controller.
 
 ```sh
 php artisan make:request StoreUserRequest
@@ -386,7 +388,8 @@ class CompanyUserController extends Controller
 
 ## Tests
 
-Now let's add tests. In the next lesson, we will allow users with the `company owner` role to also see these pages. By adding tests now for the administrator users we will know that the new feature didn't break anything for the `administrator` role.
+Now let's add tests. The plan is to check that user with the `administrator` role can perform every CRUD action.
+
 
 First, we need to create a [Factory](https://laravel.com/docs/eloquent-factories) for the `Company` Model.
 
@@ -412,8 +415,6 @@ Now the test.
 ```sh
 php artisan make:test CompanyUserTest
 ```
-
-And in this test, we will check that user with the `administrator` role can perform every CRUD action.
 
 **tests/Feature/CompanyUserTest.php**:
 ```php
@@ -492,3 +493,4 @@ class CompanyUserTest extends TestCase
 
 ![](images/admin-manages-users-tests.png)
 
+In the next lesson, we will expand the tests, after adding the User management feature to another role.
