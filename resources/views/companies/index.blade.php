@@ -22,7 +22,7 @@
                                 <th class="bg-gray-50 px-6 py-3 text-left">
                                     <span class="text-xs font-medium uppercase leading-4 tracking-wider text-gray-500">Name</span>
                                 </th>
-                                <th class="w-96 bg-gray-50 px-6 py-3 text-left">
+                                <th class="w-[30rem] bg-gray-50 px-6 py-3 text-left">
                                 </th>
                             </tr>
                             </thead>
@@ -37,6 +37,10 @@
                                             <a href="{{ route('companies.users.index', $company) }}"
                                                class="inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-xs font-semibold uppercase tracking-widest text-gray-700 shadow-sm transition duration-150 ease-in-out hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-25">
                                                 Users
+                                            </a>
+                                            <a href="{{ route('companies.activities.index', $company) }}"
+                                               class="inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-xs font-semibold uppercase tracking-widest text-gray-700 shadow-sm transition duration-150 ease-in-out hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-25">
+                                                Activities
                                             </a>
                                             <a href="{{ route('companies.edit', $company) }}"
                                                class="inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-xs font-semibold uppercase tracking-widest text-gray-700 shadow-sm transition duration-150 ease-in-out hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-25">

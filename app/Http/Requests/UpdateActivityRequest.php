@@ -17,7 +17,7 @@ class UpdateActivityRequest extends FormRequest
             'name'        => ['required'],
             'description' => ['required'],
             'start_time'  => ['required', 'date'],
-            'price'       => ['required', 'integer'],
+            'price'       => ['required', 'numeric'],
             'image'       => ['image', 'nullable'],
             'guides'      => ['required', 'exists:users,id'],
         ];

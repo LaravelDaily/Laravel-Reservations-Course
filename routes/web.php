@@ -3,9 +3,9 @@
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\CompanyController;
-use App\Http\Controllers\ActivityController;
 use App\Http\Controllers\CompanyUserController;
 use App\Http\Controllers\CompanyGuideController;
+use App\Http\Controllers\CompanyActivityController;
 
 /*
 |--------------------------------------------------------------------------
@@ -34,8 +34,7 @@ Route::middleware('auth')->group(function () {
     Route::resource('companies', CompanyController::class)->middleware('isAdmin');
     Route::resource('companies.users', CompanyUserController::class)->except('show');
     Route::resource('companies.guides', CompanyGuideController::class)->except('show');
-
-    Route::resource('activities', ActivityController::class);
+    Route::resource('companies.activities', CompanyActivityController::class);
 });
 
 require __DIR__.'/auth.php';

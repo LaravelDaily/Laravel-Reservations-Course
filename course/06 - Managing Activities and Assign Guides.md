@@ -2,6 +2,7 @@ In this lesson, let's build a new feature for managing **activities** and **assi
 
 Here's the list of topics that we'll cover below:
 - Will create the CRUD for activities.
+- Will show activities for company owners and allow making CRUD actions for administrator users for every company.
 - Will add authorization for activities using Policies.
 - Will write tests.
 
@@ -9,20 +10,20 @@ Here's the list of topics that we'll cover below:
 
 ## Activities CRUD Actions
 
-Again, we can only create CRUD with Controller and Routes.
+Again, we can only create CRUD with Controller and Routes. The Controller here will also going to be nested.
 
 ```sh
-php artisan make:controller ActivityController
+php artisan make:controller CompanyActivityController
 ```
 
 **routes/web.php**:
 ```php
-use App\Http\Controllers\ActivityController;
+use App\Http\Controllers\CompanyActivityController;
 
 Route::middleware('auth')->group(function () {
     // ...
 
-    Route::resource('activities', ActivityController::class); // [tl! ++]
+    Route::resource('companies.activities', CompanyActivityController::class); // [tl! ++]
 });
 ```
 
@@ -48,7 +49,7 @@ As for the navigation, we will add the `Activities` link after the `Guides`.
         <x-nav-link :href="route('companies.guides.index', auth()->user()->company_id)" :active="request()->routeIs('companies.guides.*')">
             {{ __('Guides') }}
         </x-nav-link>
-        <x-nav-link :href="route('activities.index')" :active="request()->routeIs('activities.*')"> {{-- [tl! add:start] --}}
+        <x-nav-link :href="route('companies.activities.index', auth()->user()->company_id)" :active="request()->routeIs('companies.activities.*')"> {{-- [tl! add:start] --}}
             {{ __('Activities') }}
         </x-nav-link> {{-- [tl! add:end] --}}
     @endif
@@ -80,7 +81,7 @@ class StoreActivityRequest extends FormRequest
             'name'        => ['required'],
             'description' => ['required'],
             'start_time'  => ['required', 'date'],
-            'price'       => ['required', 'integer'],
+            'price'       => ['required', 'numeric'],
             'image'       => ['image', 'nullable'],
             'guides'      => ['required', 'exists:users,id'],
         ];
@@ -103,7 +104,7 @@ class UpdateActivityRequest extends FormRequest
             'name'        => ['required'],
             'description' => ['required'],
             'start_time'  => ['required', 'date'],
-            'price'       => ['required', 'integer'],
+            'price'       => ['required', 'numeric'],
             'image'       => ['image', 'nullable'],
             'guides'      => ['required', 'exists:users,id'],
         ];
@@ -113,66 +114,66 @@ class UpdateActivityRequest extends FormRequest
 
 Now we can add code to the Controller, show the list of activities, and create and edit forms. 
 
-For storing Blade files, we will use the same structure as we used for companies, the `resources/views/activities` directory. 
+For storing Blade files, we will use the same structure as in the past lessons, the `resources/views/companies/activities` directory. 
 
 For the photo, for now, it will be just a simple upload stored on a public disk, without any more complex file manipulations or external packages.
 
-**app/Http/Controllers/ActivityController.php**:
+**app/Http/Controllers/CompanyActivityController.php**:
 ```php
 use App\Enums\Role;
 use App\Models\User;
+use App\Models\Company;
 use App\Models\Activity;
+use Illuminate\Support\Facades\Storage;
 use App\Http\Requests\StoreActivityRequest;
 use App\Http\Requests\UpdateActivityRequest;
 
-class ActivityController extends Controller
+class CompanyActivityController extends Controller
 {
-    public function index()
+    public function index(Company $company)
     {
-        $activities = auth()->user()->company()
-            ->with('activities')
-            ->get()
-            ->pluck('activities')
-            ->flatten();
+        $company->load('activities');
 
-        return view('activities.index', compact('activities'));
+        return view('companies.activities.index', compact('company'));
     }
 
-    public function create()
+    public function create(Company $company)
     {
-        $users = User::where('company_id', auth()->user()->company_id)
-            ->where('role_id', Role::GUIDE)
+        $guides = User::where('company_id', $company->id)
+            ->where('role_id', Role::GUIDE->value)
             ->pluck('name', 'id');
 
-        return view('activities.create', compact('users'));
+        return view('companies.activities.create', compact('guides', 'company'));
     }
 
-    public function store(StoreActivityRequest $request)
+    public function store(StoreActivityRequest $request, Company $company)
     {
         if ($request->hasFile('image')) {
             $path = $request->file('image')->store('activities', 'public');
         }
 
         $activity = Activity::create($request->validated() + [
-            'company_id' => auth()->user()->company_id,
+            'company_id' => $company->id,
             'photo' => $path ?? null,
         ]);
 
         $activity->participants()->sync($request->input('guides'));
 
-        return to_route('activities.index');
+        return to_route('companies.activities.index', $company);
     }
 
-    public function edit(Activity $activity)
+    public function edit(Company $company, Activity $activity)
     {
-        $users = User::where('company_id', auth()->user()->company_id)
-            ->where('role_id', Role::GUIDE)
+        $this->authorize('update', $company);
+
+        $guides = User::where('company_id', $company->id)
+            ->where('role_id', Role::GUIDE->value)
             ->pluck('name', 'id');
 
-        return view('activities.edit', compact('users', 'activity'));
+        return view('companies.activities.edit', compact('guides', 'activity', 'company'));
     }
 
-    public function update(UpdateActivityRequest $request, Activity $activity)
+    public function update(UpdateActivityRequest $request, Company $company, Activity $activity)
     {
         if ($request->hasFile('image')) {
             $path = $request->file('image')->store('activities', 'public');
@@ -185,19 +186,19 @@ class ActivityController extends Controller
             'photo' => $path ?? $activity->photo,
         ]);
 
-        return to_route('activities.index');
+        return to_route('companies.activities.index', $company);
     }
 
-    public function destroy(Activity $activity)
+    public function destroy(Company $company, Activity $activity)
     {
         $activity->delete();
 
-        return to_route('activities.index');
+        return to_route('companies.activities.index', $company);
     }
 }
 ```
 
-**resources/views/activities/index.blade.php**:
+**resources/views/companies/activities/index.blade.php**:
 ```blade
 <x-app-layout>
     <x-slot name="header">
@@ -211,7 +212,7 @@ class ActivityController extends Controller
             <div class="overflow-hidden bg-white shadow-sm sm:rounded-lg">
                 <div class="overflow-hidden overflow-x-auto border-b border-gray-200 bg-white p-6">
 
-                    <a href="{{ route('activities.create') }}"
+                    <a href="{{ route('companies.activities.create', $company) }}"
                        class="mb-4 inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-xs font-semibold uppercase tracking-widest text-gray-700 shadow-sm transition duration-150 ease-in-out hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-25">
                         Create
                     </a>
@@ -238,7 +239,7 @@ class ActivityController extends Controller
                             </thead>
 
                             <tbody class="bg-white divide-y divide-gray-200 divide-solid">
-                                @foreach($activities as $activity)
+                                @foreach($company->activities as $activity)
                                     <tr class="bg-white">
                                         <td class="px-6 py-4 text-sm leading-5 text-gray-900 whitespace-no-wrap">
                                             @if($activity->photo)
@@ -255,11 +256,11 @@ class ActivityController extends Controller
                                             {{ $activity->price }}
                                         </td>
                                         <td class="px-6 py-4 text-sm leading-5 text-gray-900 whitespace-no-wrap">
-                                            <a href="{{ route('activities.edit', $activity) }}"
+                                            <a href="{{ route('companies.activities.edit', [$company, $activity]) }}"
                                                class="inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-xs font-semibold uppercase tracking-widest text-gray-700 shadow-sm transition duration-150 ease-in-out hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-25">
                                                 Edit
                                             </a>
-                                            <form action="{{ route('activities.destroy', $activity) }}" method="POST" onsubmit="return confirm('Are you sure?')" style="display: inline-block;">
+                                            <form action="{{ route('companies.activities.destroy', [$company, $activity]) }}" method="POST" onsubmit="return confirm('Are you sure?')" style="display: inline-block;">
                                                 @csrf
                                                 @method('DELETE')
                                                 <x-danger-button>
@@ -281,7 +282,7 @@ class ActivityController extends Controller
 
 ![activities list](images/activities-list.png)
 
-**resources/views/activities/create.blade.php**:
+**resources/views/companies/activities/create.blade.php**:
 ```blade
 <x-app-layout>
     <x-slot name="header">
@@ -294,7 +295,7 @@ class ActivityController extends Controller
         <div class="mx-auto max-w-7xl sm:px-6 lg:px-8">
             <div class="overflow-hidden bg-white shadow-sm sm:rounded-lg">
                 <div class="overflow-hidden overflow-x-auto border-b border-gray-200 bg-white p-6">
-                    <form action="{{ route('activities.store') }}" method="POST" enctype="multipart/form-data">
+                    <form action="{{ route('companies.activities.store', $company) }}" method="POST" enctype="multipart/form-data">
                         @csrf
 
                         <div>
@@ -331,7 +332,7 @@ class ActivityController extends Controller
                             <x-input-label for="guides" value="Guides" />
                             <select name="guides" id="guides" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
                                 <option>-- SELECT GUIDE --</option>
-                                @foreach($users as $id => $name)
+                                @foreach($guides as $id => $name)
                                     <option value="{{ $id }}" @selected(old('guides') == $id)>{{ $name }}</option>
                                 @endforeach
                             </select>
@@ -352,7 +353,7 @@ class ActivityController extends Controller
 
 ![create activity](images/create-activity.png)
 
-**resources/views/activities/edit.blade.php**:
+**resources/views/companies/activities/edit.blade.php**:
 ```blade
 <x-app-layout>
     <x-slot name="header">
@@ -365,7 +366,7 @@ class ActivityController extends Controller
         <div class="mx-auto max-w-7xl sm:px-6 lg:px-8">
             <div class="overflow-hidden bg-white shadow-sm sm:rounded-lg">
                 <div class="overflow-hidden overflow-x-auto border-b border-gray-200 bg-white p-6">
-                    <form action="{{ route('activities.update', $activity) }}" method="POST" enctype="multipart/form-data">
+                    <form action="{{ route('companies.activities.update', [$company, $activity]) }}" method="POST" enctype="multipart/form-data">
                         @csrf
                         @method('PUT')
 
@@ -407,7 +408,7 @@ class ActivityController extends Controller
                             <x-input-label for="guides" value="Guides" />
                             <select name="guides" id="guides" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
                                 <option>-- SELECT GUIDE --</option>
-                                @foreach($users as $id => $name)
+                                @foreach($guides as $id => $name)
                                     <option value="{{ $id }}" @selected(old('guides', $activity->participants->contains($id)))>{{ $name }}</option>
                                 @endforeach
                             </select>
@@ -435,7 +436,7 @@ class ActivityController extends Controller
 Of course, only hiding the navigation isn't secure enough. To keep consistency, we will use Policies. Let's create a Policy and register it.
 
 ```sh
-php artisan make:policy ActivityPolicy --model=Activity
+php artisan make:policy CompanyActivityPolicy --model=Activity
 ```
 
 **app/Provides/AuthServiceProvider.php**:
@@ -447,62 +448,131 @@ class AuthServiceProvider extends ServiceProvider
 {
     protected $policies = [
         Company::class => CompanyUserPolicy::class,
-        Activity::class => ActivityPolicy::class, // [tl! ++]
+        Activity::class => CompanyActivityPolicy::class, // [tl! ++]
     ];
 
     // ...
 }
 ```
 
-In the Policy, for listing and creating the activities, we will check if the user has the `Company Owner` role. 
+In the Policy, we will check if the user has the `Company Owner` role and is doing the action for his company.
 
-For other actions, in addition to checking the role, we also need to check if the user tries to perform the action for their own company.
+But for the `administrator` role, we just need to allow **everything** as we did in the `CompanyUserPolicy`. So, we will use the `before` [Policy Filter](https://laravel.com/docs/authorization#authorizing-actions-using-policies) method again. In this method, we will return `true` if the user has the role of `administrator`.
 
 **app/Policies/ActivityPolicity**:
 ```php
 use App\Enums\Role;
+use App\Models\Company;
 use App\Models\Activity;
 use App\Models\User;
 
-class ActivityPolicy
+class CompanyActivityPolicy
 {
-    public function viewAny(User $user): bool
+    public function before(User $user): bool|null
     {
-        return $user->role_id === Role::COMPANY_OWNER->value;
+        if ($user->role_id === Role::ADMINISTRATOR->value) {
+            return true;
+        }
+
+        return null;
     }
 
-    public function create(User $user): bool
+    public function viewAny(User $user, Company $company): bool
     {
-        return $user->role_id === Role::COMPANY_OWNER->value;
+        return $user->role_id === Role::COMPANY_OWNER->value && $user->company_id === $company->id;
+    }
+    
+    public function create(User $user, Company $company): bool
+    {
+        return $user->role_id === Role::COMPANY_OWNER->value && $user->company_id === $company->id;
     }
 
     public function update(User $user, Activity $activity): bool
     {
-        return $user->role_id === Role::COMPANY_OWNER->value &&
-            $user->company_id === $activity->company_id;
+        return $user->role_id === Role::COMPANY_OWNER->value && $user->company_id === $activity->company_id;
     }
 
     public function delete(User $user, Activity $activity): bool
     {
-        return $user->role_id === Role::COMPANY_OWNER->value &&
-            $user->company_id === $activity->company_id;
+        return $user->role_id === Role::COMPANY_OWNER->value && $user->company_id === $activity->company_id;
     }
 }
 ```
 
 Next, we need to use this Policy in the Controller. Because here we are using a simple Resource Controller, we can use the [authorizeResource](https://laravel.com/docs/authorization#authorizing-resource-controllers) method in the Controller's constructor.
 
+Next, in the `CompanyActivityController`, we must do the `authorize` check for each CRUD action. Again, there are a couple of ways to do that, but I will use the [`authorize`](https://laravel.com/docs/authorization#via-controller-helpers) method for consistency.
+
 **app/Http/Controllers/ActivityController.php**:
 ```php
-class ActivityController extends Controller
+class CompanyActivityController extends Controller
 {
-    public function __construct()
+    public function index(Company $company)
     {
-        $this->authorizeResource(Activity::class, 'activity');
+        $this->authorize('viewAny', $company); // [tl! ++]
+
+        // ...
     }
 
-    // ...
+    public function create(Company $company)
+    {
+        $this->authorize('create', $company); // [tl! ++]
+
+        // ...
+    }
+
+    public function store(StoreActivityRequest $request, Company $company)
+    {
+        $this->authorize('create', $company); // [tl! ++]
+
+        // ...
+    }
+
+    public function edit(Company $company, Activity $activity)
+    {
+        $this->authorize('update', $company); // [tl! ++]
+
+        // ...
+    }
+
+    public function update(UpdateActivityRequest $request, Company $company, Activity $activity)
+    {
+        $this->authorize('update', $company); // [tl! ++]
+
+        // ...
+    }
+
+    public function destroy(Company $company, Activity $activity)
+    {
+        $this->authorize('delete', $company); // [tl! ++]
+
+        // ...
+    }
 }
+```
+
+---
+
+## Showing Activities for Administrator User
+
+For showing activities of every company for the user with the role of `administrator`, we already have made all the logic. Later we will add tests to ensure it. Now we need to add a link so users can access that page.
+
+**resources/views/companies/index.blade.php**:
+```blade
+// ...
+<td class="px-6 py-4 text-sm leading-5 text-gray-900 whitespace-no-wrap">
+    <a href="{{ route('companies.users.index', $company) }}"
+       class="inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-xs font-semibold uppercase tracking-widest text-gray-700 shadow-sm transition duration-150 ease-in-out hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-25">
+        Users
+    </a>
+    <a href="{{ route('companies.activities.index', $company) }}" {{-- [tl! add:start] --}}
+       class="inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-xs font-semibold uppercase tracking-widest text-gray-700 shadow-sm transition duration-150 ease-in-out hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-25">
+        Activities
+    </a> {{-- [tl! add:end] --}}
+    
+    {{-- ... Edit/Delete buttons --}}
+</td>
+// ...
 ```
 
 ---
@@ -538,7 +608,7 @@ class ActivityFactory extends Factory
 Now the test.
 
 ```sh
-php artisan make:test ActivityTest
+php artisan make:test CompanyActivityTest
 ```
 
 So, what do we need to test here? Permissions, probably: the `Company Owner` needs to perform every action only for their company. 
@@ -547,18 +617,26 @@ So, we need to test the following:
 
 - For the activities list: test that the company owner can see only their company's activities and cannot see other companies.
 - For create, edit, and delete: it's the same, and we have already written similar tests in the `CompanyGuideTest`.
+- In the create and edit, the list of the guides should be visible only from that company.
+- Image upload shouldn't allow to upload non-image files.
+- Administrator user can perform every CRUD action.
 
 **tests/Feature/ActivityTest.php**:
 ```php
+<?php
+
+namespace Tests\Feature;
+
 use Tests\TestCase;
 use App\Models\User;
 use App\Models\Company;
 use App\Models\Activity;
-use Illuminate\Http\UploadedFile;  
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
-class ActivityTest extends TestCase
+class CompanyActivityTest extends TestCase
 {
     use RefreshDatabase;
 
@@ -567,7 +645,7 @@ class ActivityTest extends TestCase
         $company = Company::factory()->create();
         $user = User::factory()->companyOwner()->create(['company_id' => $company->id]);
 
-        $response = $this->actingAs($user)->get(route('activities.index'));
+        $response = $this->actingAs($user)->get(route('companies.activities.index', $company, $company));
 
         $response->assertOk();
     }
@@ -579,7 +657,7 @@ class ActivityTest extends TestCase
         $activity = Activity::factory()->create(['company_id' => $company->id]);
         $activity2 = Activity::factory()->create();
 
-        $response = $this->actingAs($user)->get(route('activities.index'));
+        $response = $this->actingAs($user)->get(route('companies.activities.index', $company));
 
         $response->assertSeeText($activity->name)
             ->assertDontSeeText($activity2->name);
@@ -591,7 +669,7 @@ class ActivityTest extends TestCase
         $user = User::factory()->companyOwner()->create(['company_id' => $company->id]);
         $guide = User::factory()->guide()->create();
 
-        $response = $this->actingAs($user)->post(route('activities.store'), [
+        $response = $this->actingAs($user)->post(route('companies.activities.store', $company), [
             'name' => 'activity',
             'description' => 'description',
             'start_time' => '2023-09-01 10:00',
@@ -599,7 +677,7 @@ class ActivityTest extends TestCase
             'guides' => $guide->id,
         ]);
 
-        $response->assertRedirect(route('activities.index'));
+        $response->assertRedirect(route('companies.activities.index', $company));
 
         $this->assertDatabaseHas('activities', [
             'company_id' => $company->id,
@@ -620,7 +698,7 @@ class ActivityTest extends TestCase
 
         $file = UploadedFile::fake()->image('avatar.jpg');
 
-        $this->actingAs($user)->post(route('activities.store'), [
+        $this->actingAs($user)->post(route('companies.activities.store', $company), [
             'name' => 'activity',
             'description' => 'description',
             'start_time' => '2023-09-01 10:00',
@@ -642,7 +720,7 @@ class ActivityTest extends TestCase
 
         $file = UploadedFile::fake()->create('document.pdf', 2000, 'application/pdf');
 
-        $response = $this->actingAs($user)->post(route('activities.store'), [
+        $response = $this->actingAs($user)->post(route('companies.activities.store', $company), [
             'name' => 'activity',
             'description' => 'description',
             'start_time' => '2023-09-01 10:00',
@@ -656,6 +734,47 @@ class ActivityTest extends TestCase
         Storage::disk('public')->assertMissing('activities/' . $file->hashName());
     }
 
+    public function test_guides_are_shown_only_for_specific_company_in_create_form()
+    {
+        $company = Company::factory()->create();
+        $user = User::factory()->companyOwner()->create(['company_id' => $company->id]);
+        $guide = User::factory()->guide()->create(['company_id' => $company->id]);
+
+        $company2 = Company::factory()->create();
+        $guide2 = User::factory()->guide()->create(['company_id' => $company2->id]);
+
+        $response = $this->actingAs($user)->get(route('companies.activities.create', $company));
+
+        $response->assertViewHas('users', function (Collection $users) use ($guide) {
+            return $guide->name === $users[$guide->id];
+        });
+
+        $response->assertViewHas('users', function (Collection $users) use ($guide2) {
+            return ! array_key_exists($guide2->id, $users->toArray());
+        });
+    }
+
+    public function test_guides_are_shown_only_for_specific_company_in_edit_form()
+    {
+        $company = Company::factory()->create();
+        $user = User::factory()->companyOwner()->create(['company_id' => $company->id]);
+        $guide = User::factory()->guide()->create(['company_id' => $company->id]);
+        $activity = Activity::factory()->create(['company_id' => $company->id]);
+
+        $company2 = Company::factory()->create();
+        $guide2 = User::factory()->guide()->create(['company_id' => $company2->id]);
+
+        $response = $this->actingAs($user)->get(route('companies.activities.edit', [$company, $activity]));
+
+        $response->assertViewHas('users', function (Collection $users) use ($guide) {
+            return $guide->name === $users[$guide->id];
+        });
+
+        $response->assertViewHas('users', function (Collection $users) use ($guide2) {
+            return ! array_key_exists($guide2->id, $users->toArray());
+        });
+    }
+
     public function test_company_owner_can_edit_activity()
     {
         $company = Company::factory()->create();
@@ -663,7 +782,7 @@ class ActivityTest extends TestCase
         $guide = User::factory()->guide()->create();
         $activity = Activity::factory()->create(['company_id' => $company->id]);
 
-        $response = $this->actingAs($user)->put(route('activities.update', $activity), [
+        $response = $this->actingAs($user)->put(route('companies.activities.update', [$company, $activity]), [
             'name' => 'activity',
             'description' => 'description',
             'start_time' => '2023-09-01 10:00',
@@ -671,7 +790,7 @@ class ActivityTest extends TestCase
             'guides' => $guide->id,
         ]);
 
-        $response->assertRedirect(route('activities.index'));
+        $response->assertRedirect(route('companies.activities.index', $company));
 
         $this->assertDatabaseHas('activities', [
             'company_id' => $company->id,
@@ -690,7 +809,7 @@ class ActivityTest extends TestCase
         $guide = User::factory()->guide()->create();
         $activity = Activity::factory()->create(['company_id' => $company2->id]);
 
-        $response = $this->actingAs($user)->put(route('activities.update', $activity), [
+        $response = $this->actingAs($user)->put(route('companies.activities.update', [$company2, $activity]), [
             'name' => 'activity',
             'description' => 'description',
             'start_time' => '2023-09-01 10:00',
@@ -707,9 +826,9 @@ class ActivityTest extends TestCase
         $user = User::factory()->companyOwner()->create(['company_id' => $company->id]);
         $activity = Activity::factory()->create(['company_id' => $company->id]);
 
-        $response = $this->actingAs($user)->delete(route('activities.destroy', $activity));
+        $response = $this->actingAs($user)->delete(route('companies.activities.destroy', [$company, $activity]));
 
-        $response->assertRedirect(route('activities.index'));
+        $response->assertRedirect(route('companies.activities.index', $company));
 
         $this->assertModelMissing($activity);
     }
@@ -721,9 +840,71 @@ class ActivityTest extends TestCase
         $user = User::factory()->companyOwner()->create(['company_id' => $company->id]);
         $activity = Activity::factory()->create(['company_id' => $company2->id]);
 
-        $response = $this->actingAs($user)->put(route('activities.destroy', $activity));
+        $response = $this->actingAs($user)->delete(route('companies.activities.destroy', [$company2, $activity]));
 
+        $this->assertModelExists($activity);
         $response->assertForbidden();
+    }
+
+    public function test_admin_can_view_companies_activities()
+    {
+        $company = Company::factory()->create();
+        $user = User::factory()->admin()->create();
+
+        $response = $this->actingAs($user)->get(route('companies.activities.index', $company, $company));
+
+        $response->assertOk();
+    }
+
+    public function test_admin_can_create_activity_for_company()
+    {
+        $company = Company::factory()->create();
+        $user = User::factory()->admin()->create();
+        $guide = User::factory()->guide()->create();
+
+        $response = $this->actingAs($user)->post(route('companies.activities.store', $company->id), [
+            'name' => 'activity',
+            'description' => 'description',
+            'start_time' => '2023-09-01 10:00',
+            'price' => 9999,
+            'guides' => $guide->id,
+        ]);
+
+        $response->assertRedirect(route('companies.activities.index', $company->id));
+
+        $this->assertDatabaseHas('activities', [
+            'company_id' => $company->id,
+            'name' => 'activity',
+            'description' => 'description',
+            'start_time' => '2023-09-01 10:00',
+            'price' => 999900,
+        ]);
+    }
+
+    public function test_admin_can_edit_activity_for_company()
+    {
+        $company = Company::factory()->create();
+        $user = User::factory()->admin()->create();
+        $guide = User::factory()->guide()->create();
+        $activity = Activity::factory()->create(['company_id' => $company->id]);
+
+        $response = $this->actingAs($user)->put(route('companies.activities.update', [$company, $activity]), [
+            'name' => 'activity',
+            'description' => 'description',
+            'start_time' => '2023-09-01 10:00',
+            'price' => 9999,
+            'guides' => $guide->id,
+        ]);
+
+        $response->assertRedirect(route('companies.activities.index', $company));
+
+        $this->assertDatabaseHas('activities', [
+            'company_id' => $company->id,
+            'name' => 'activity',
+            'description' => 'description',
+            'start_time' => '2023-09-01 10:00',
+            'price' => 999900,
+        ]);
     }
 }
 ```

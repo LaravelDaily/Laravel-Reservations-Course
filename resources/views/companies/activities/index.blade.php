@@ -10,7 +10,7 @@
             <div class="overflow-hidden bg-white shadow-sm sm:rounded-lg">
                 <div class="overflow-hidden overflow-x-auto border-b border-gray-200 bg-white p-6">
 
-                    <a href="{{ route('activities.create') }}"
+                    <a href="{{ route('companies.activities.create', $company) }}"
                        class="mb-4 inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-xs font-semibold uppercase tracking-widest text-gray-700 shadow-sm transition duration-150 ease-in-out hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-25">
                         Create
                     </a>
@@ -37,7 +37,7 @@
                             </thead>
 
                             <tbody class="bg-white divide-y divide-gray-200 divide-solid">
-                                @foreach($activities as $activity)
+                                @foreach($company->activities as $activity)
                                     <tr class="bg-white">
                                         <td class="px-6 py-4 text-sm leading-5 text-gray-900 whitespace-no-wrap">
                                             @if($activity->photo)
@@ -54,11 +54,11 @@
                                             {{ $activity->price }}
                                         </td>
                                         <td class="px-6 py-4 text-sm leading-5 text-gray-900 whitespace-no-wrap">
-                                            <a href="{{ route('activities.edit', $activity) }}"
+                                            <a href="{{ route('companies.activities.edit', [$company, $activity]) }}"
                                                class="inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-xs font-semibold uppercase tracking-widest text-gray-700 shadow-sm transition duration-150 ease-in-out hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-25">
                                                 Edit
                                             </a>
-                                            <form action="{{ route('activities.destroy', $activity) }}" method="POST" onsubmit="return confirm('Are you sure?')" style="display: inline-block;">
+                                            <form action="{{ route('companies.activities.destroy', [$company, $activity]) }}" method="POST" onsubmit="return confirm('Are you sure?')" style="display: inline-block;">
                                                 @csrf
                                                 @method('DELETE')
                                                 <x-danger-button>
