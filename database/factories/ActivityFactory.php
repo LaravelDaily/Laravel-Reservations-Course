@@ -14,8 +14,8 @@ class ActivityFactory extends Factory
             'company_id'  => Company::factory(),
             'name'        => fake()->name(),
             'description' => fake()->text(),
-            'start_time'  => Carbon::now(),
-            'price'       => fake()->randomNumber(),
+            'start_time'  => fake()->dateTimeBetween('+1 day', '+1 year'),
+            'price'       => fake()->randomNumber(5, strict: true),
         ];
     }
 }

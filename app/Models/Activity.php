@@ -36,4 +36,11 @@ class Activity extends Model
             set: fn($value) => $value * 100,
         );
     }
+
+    public function thumbnail(): Attribute
+    {
+        return Attribute::make(
+            get: fn() => $this->photo ? '/activities/thumbs/' . $this->photo : '/no_image.jpg',
+        );
+    }
 }

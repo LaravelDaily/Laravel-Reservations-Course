@@ -1,8 +1,10 @@
 <?php
 
+use App\Http\Controllers\HomeController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\CompanyController;
+use App\Http\Controllers\ActivityController;
 use App\Http\Controllers\CompanyUserController;
 use App\Http\Controllers\CompanyGuideController;
 use App\Http\Controllers\CompanyActivityController;
@@ -18,13 +20,8 @@ use App\Http\Controllers\CompanyActivityController;
 |
 */
 
-Route::get('/', function () {
-    return view('welcome');
-});
-
-Route::get('/dashboard', function () {
-    return view('dashboard');
-})->middleware(['auth', 'verified'])->name('dashboard');
+Route::get('/', HomeController::class)->name('home');
+Route::get('/activities/{activity}', [ActivityController::class, 'show'])->name('activity.show');
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
@@ -37,4 +34,4 @@ Route::middleware('auth')->group(function () {
     Route::resource('companies.activities', CompanyActivityController::class);
 });
 
-require __DIR__.'/auth.php';
+require __DIR__ . '/auth.php';

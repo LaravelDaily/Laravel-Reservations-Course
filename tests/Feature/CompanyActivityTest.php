@@ -82,7 +82,8 @@ class CompanyActivityTest extends TestCase
             'image' => $file,
         ]);
 
-        Storage::disk('public')->assertExists('activities/' . $file->hashName());
+        Storage::disk('activities')->assertExists($file->hashName());
+        Storage::disk('activities')->assertExists('thumbs/' . $file->hashName());
     }
 
     public function test_cannon_upload_non_image_file()
@@ -106,7 +107,7 @@ class CompanyActivityTest extends TestCase
 
         $response->assertSessionHasErrors(['image']);
 
-        Storage::disk('public')->assertMissing('activities/' . $file->hashName());
+        Storage::disk('activities')->assertMissing($file->hashName());
     }
 
     public function test_guides_are_shown_only_for_specific_company_in_create_form()
@@ -120,12 +121,12 @@ class CompanyActivityTest extends TestCase
 
         $response = $this->actingAs($user)->get(route('companies.activities.create', $company));
 
-        $response->assertViewHas('users', function (Collection $users) use ($guide) {
-            return $guide->name === $users[$guide->id];
+        $response->assertViewHas('guides', function (Collection $guides) use ($guide) {
+            return $guide->name === $guides[$guide->id];
         });
 
-        $response->assertViewHas('users', function (Collection $users) use ($guide2) {
-            return ! array_key_exists($guide2->id, $users->toArray());
+        $response->assertViewHas('guides', function (Collection $guides) use ($guide2) {
+            return ! array_key_exists($guide2->id, $guides->toArray());
         });
     }
 
@@ -141,12 +142,12 @@ class CompanyActivityTest extends TestCase
 
         $response = $this->actingAs($user)->get(route('companies.activities.edit', [$company, $activity]));
 
-        $response->assertViewHas('users', function (Collection $users) use ($guide) {
-            return $guide->name === $users[$guide->id];
+        $response->assertViewHas('guides', function (Collection $guides) use ($guide) {
+            return $guide->name === $guides[$guide->id];
         });
 
-        $response->assertViewHas('users', function (Collection $users) use ($guide2) {
-            return ! array_key_exists($guide2->id, $users->toArray());
+        $response->assertViewHas('guides', function (Collection $guides) use ($guide2) {
+            return ! array_key_exists($guide2->id, $guides->toArray());
         });
     }
 

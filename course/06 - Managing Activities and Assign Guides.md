@@ -282,6 +282,26 @@ class CompanyActivityController extends Controller
 
 ![activities list](images/activities-list.png)
 
+Because we are saving the price in cents before adding value to the DB, we need to multiply it by 100 and to show the correct value in the front end, we need to divide by 100. We will use [Accessors & Mutators](https://laravel.com/docs/eloquent-mutators#accessors-and-mutators) for this.
+
+**app/Models/Activity.php**:
+```php
+use Illuminate\Database\Eloquent\Casts\Attribute;
+
+class Activity extends Model
+{
+    // ...
+
+    public function price(): Attribute
+    {
+        return Attribute::make(
+            get: fn($value) => $value / 100,
+            set: fn($value) => $value * 100,
+        );
+    }   
+}
+```
+
 **resources/views/companies/activities/create.blade.php**:
 ```blade
 <x-app-layout>
@@ -599,7 +619,7 @@ class ActivityFactory extends Factory
             'name'        => fake()->name(),
             'description' => fake()->text(),
             'start_time'  => Carbon::now(),
-            'price'       => fake()->randomNumber(),
+            'price'       => fake()->randomNumber(5),
         ];
     }
 }
@@ -745,12 +765,12 @@ class CompanyActivityTest extends TestCase
 
         $response = $this->actingAs($user)->get(route('companies.activities.create', $company));
 
-        $response->assertViewHas('users', function (Collection $users) use ($guide) {
-            return $guide->name === $users[$guide->id];
+        $response->assertViewHas('guides', function (Collection $guides) use ($guide) {
+            return $guide->name === $guides[$guide->id];
         });
 
-        $response->assertViewHas('users', function (Collection $users) use ($guide2) {
-            return ! array_key_exists($guide2->id, $users->toArray());
+        $response->assertViewHas('guides', function (Collection $guides) use ($guide2) {
+            return ! array_key_exists($guide2->id, $guides->toArray());
         });
     }
 
@@ -766,12 +786,12 @@ class CompanyActivityTest extends TestCase
 
         $response = $this->actingAs($user)->get(route('companies.activities.edit', [$company, $activity]));
 
-        $response->assertViewHas('users', function (Collection $users) use ($guide) {
-            return $guide->name === $users[$guide->id];
+        $response->assertViewHas('guides', function (Collection $guides) use ($guide) {
+            return $guide->name === $guides[$guide->id];
         });
 
-        $response->assertViewHas('users', function (Collection $users) use ($guide2) {
-            return ! array_key_exists($guide2->id, $users->toArray());
+        $response->assertViewHas('guides', function (Collection $guides) use ($guide2) {
+            return ! array_key_exists($guide2->id, $guides->toArray());
         });
     }
 

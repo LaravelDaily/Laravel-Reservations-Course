@@ -39,7 +39,7 @@
 
                         <div class="mt-4">
                             @if($activity->photo)
-                                <img src="{{ asset($activity->photo) }}" alt="{{ $activity->name }}" class="mb-4 h-48 w-48 rounded-xl">
+                                <img src="{{ asset($activity->thumbnail) }}" alt="{{ $activity->name }}" class="mb-4 h-48 w-48 rounded-xl">
                             @endif
 
                             <x-input-label for="image" value="Photo" />
