@@ -1,8 +1,8 @@
-In this lesson, let's build a new feature for managing **activities** and **assigning guides** to them. Of course, we will write tests for this feature at the end.
+In this lesson, let's build a new feature for managing **activities** and **assigning guides** to them. 
 
 Here's the list of topics that we'll cover below:
 - Will create the CRUD for activities.
-- Will show activities for company owners and allow making CRUD actions for administrator users for every company.
+- Will make it work for both `company owner` and `administrator` users.
 - Will add authorization for activities using Policies.
 - Will write tests.
 
@@ -10,7 +10,7 @@ Here's the list of topics that we'll cover below:
 
 ## Activities CRUD Actions
 
-Again, we can only create CRUD with Controller and Routes. The Controller here will also going to be nested.
+Again, we can only create CRUD with Controller and Routes. The Controller here will also be nested so that we will have the URLs like `/companies/1/activities`.
 
 ```sh
 php artisan make:controller CompanyActivityController
@@ -26,6 +26,8 @@ Route::middleware('auth')->group(function () {
     Route::resource('companies.activities', CompanyActivityController::class); // [tl! ++]
 });
 ```
+
+**Notice**: this is not the first CRUD where we use Nested Controllers, but it's not the only way. In this case, it's just my personal preference to implement multi-tenancy this way, to access records only with their company ID in the URL. You may build CRUDs differently, with URLs like `/activities`, `/guides`, and others, and check `company_id` in another way, like using [Global Scopes](https://laravel.com/docs/10.x/eloquent#global-scopes) with the `auth()->user()->company_id` value.
 
 As for the navigation, we will add the `Activities` link after the `Guides`.
 
@@ -282,7 +284,7 @@ class CompanyActivityController extends Controller
 
 ![activities list](images/activities-list.png)
 
-Because we are saving the price in cents before adding value to the DB, we need to multiply it by 100 and to show the correct value in the front end, we need to divide by 100. We will use [Accessors & Mutators](https://laravel.com/docs/eloquent-mutators#accessors-and-mutators) for this.
+Because we are saving the price in cents, before adding value to the DB, we need to multiply it by 100. And the other way around: to show the correct value in the front end, we need to divide by 100. We will use [Accessors & Mutators](https://laravel.com/docs/eloquent-mutators#accessors-and-mutators) for this.
 
 **app/Models/Activity.php**:
 ```php
@@ -575,7 +577,7 @@ class CompanyActivityController extends Controller
 
 ## Showing Activities for Administrator User
 
-For showing activities of every company for the user with the role of `administrator`, we already have made all the logic. Later we will add tests to ensure it. Now we need to add a link so users can access that page.
+For showing the activities of every company for the `administrator` user, we already have made all the logic. We just need to add a link to the Companies list so administrators can access that page.
 
 **resources/views/companies/index.blade.php**:
 ```blade
@@ -638,7 +640,7 @@ So, we need to test the following:
 - For the activities list: test that the company owner can see only their company's activities and cannot see other companies.
 - For create, edit, and delete: it's the same, and we have already written similar tests in the `CompanyGuideTest`.
 - In the create and edit, the list of the guides should be visible only from that company.
-- Image upload shouldn't allow to upload non-image files.
+- Image upload shouldn't allow uploading non-image files.
 - Administrator user can perform every CRUD action.
 
 **tests/Feature/ActivityTest.php**:
@@ -933,4 +935,4 @@ class CompanyActivityTest extends TestCase
 
 I think we created enough functionality to show it to the client and see what they say so far. Such a feedback loop is very important: the earlier we learn about the changes, the less code refactoring we need.
 
-In the next lesson, we will make changes according to the client feedback.
+In the next lesson, we will make changes according to the client's feedback.
