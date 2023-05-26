@@ -1,17 +1,25 @@
-We need to ask the client how the homepage will look and overall ask about the design. Meanwhile, while talking about the design, we can make some prototypes using the Laravel Breeze design.
+Ok, now our users can manage activities. Time to show them on the public front-facing website, starting with the homepage. 
+
+We need to ask the client how the homepage design would look. But meanwhile, while waiting for the answer, we can still build the functionality prototype using the Laravel Breeze design.
+
+This is what we'll build in this lesson:
+
+![](images/first-homepage-view.png)
 
 Here's the list of topics that we'll cover below:
 - Modifying Breeze layout for quickly building frontend features.
 - Creating a thumbnail image for the activity.
 - Showing activities on the homepage and showing the activity itself.
-- Adding dummy data so that the client would better see how the homepage will look.
+- Adding dummy data so the client can better see how the homepage will look.
 - Writing tests.
 
 ---
 
 ## Modifying Breeze Layout
 
-Before using Breeze Layout for the homepage, we need to make changes otherwise, it will show errors for guests. First, create a new invokable `HomeController` and rename the `resources/views/dashboard.blade.php` into `resources/views/home.blade.php`.
+Before using Breeze Layout for the homepage, we must make it work for non-authenticated guest users. 
+
+First, create a new [invokable](https://laravel.com/docs/10.x/controllers#single-action-controllers) `HomeController` and rename the `resources/views/dashboard.blade.php` into `resources/views/home.blade.php`.
 
 ```sh
 php artisan make:controller HomeController --invokable
@@ -28,7 +36,7 @@ class HomeController extends Controller
 }
 ```
 
-Next, we need to change the routes to use `HomeController`.
+Next, we need to change the Routes to use `HomeController`.
 
 **routes/web.php**:
 ```php
@@ -46,7 +54,7 @@ Route::get('/', HomeController::class)->name('home'); // [tl! ++]
 // ...
 ```
 
-Because we removed the `dashboard` route, we need to change everywhere to use the `home` route.
+Because we removed the `dashboard` route, we need to change the global setting of where to redirect after the login.
 
 **app/Providers/RouteServiceProvider.php**:
 ```php
@@ -202,13 +210,15 @@ And in the navigation, besides changing the route name, we need to wrap links on
 
 ## Making Thumbnail for Activity
 
-We will use the `intervention/image` package to make a thumbnail. Yes, we could use `spatie/laravel-medialibrary,` but I think it would be overkill for only one image per activity for such a small project.
+Every activity should have a thumbnail to be shown on the homepage.
+
+We will use the `intervention/image` package to make a thumbnail. Yes, we could use `spatie/laravel-medialibrary,` but I think it would be overkill for only one image per activity for such a small project, at least for now.
 
 ```sh
 composer require intervention/image
 ```
 
-Now we need to make a thumbnail when the image is uploaded. Because this needs to be done when creating and editing the activity for the file upload and thumbnail creation, we can create a separate method to avoid repeating the code. And for deleting old images, I think [Observer](https://laravel.com/docs/eloquent#observers) would be a perfect fit.
+Because making thumbnail needs to be done both when creating and editing the activity, we can create a separate private method to avoid repeating the code. 
 
 So the Controller changes would be:
 
@@ -308,7 +318,7 @@ return [
 ];
 ```
 
-Next, we must delete the image when a new is uploaded to the edit page. As I said, I will use [Observer](https://laravel.com/docs/eloquent#observers).
+Next, we must delete the image when a new one is uploaded to the edit page. I think [Observer](https://laravel.com/docs/eloquent#observers) would be a perfect fit.
 
 ```sh
 php artisan make:observer ActivityObserver
@@ -340,7 +350,9 @@ After uploading images, we also have thumbnail images in the `activites/thumbs` 
 
 ## Showing Activities on the Homepage
 
-Now we can show activities on the homepage by paginating them and showing `No activities` if there are non. On the homepage, we will show upcoming activities and order them by `start_time` in a simple grid layout.
+Now we can show activities on the homepage by paginating them and showing `No activities` if there are none. 
+
+On the homepage, we will show upcoming activities and order them by `start_time` in a simple 3x3 grid layout, 9 records per page.
 
 **app/Http/Controllers/HomeController.php**:
 ```php
@@ -394,11 +406,11 @@ class HomeController extends Controller
 </x-app-layout>
 ```
 
-The expected result now should be as shown in the image below:
+This is what we will see:
 
 ![](images/first-homepage-view.png)
 
-In the Blade file, I used `thumbnail` for showing thumbnails, but we don't have such a field in the DB. The easiest way to show a thumbnail, my tough, was to use an [Accesson](https://laravel.com/docs/eloquent-mutators#defining-an-accessor). Also, if there is no image for the activity, we will show a default image I took from the first Google result.
+In the Blade file, I used `thumbnail` for showing thumbnails, but we don't have such a field in the DB. To display the thumbnail, we will use [Accessor](https://laravel.com/docs/eloquent-mutators#defining-an-accessor). Also, if there is no image for the activity, we will show a default image I took from the first Google result.
 
 **app/Models/Activity.php**:
 ```php
@@ -417,7 +429,7 @@ class Activity extends Model
 }
 ```
 
-Now it is showing a thumbnail image or default `no_image.jpg`.
+Now it is showing a thumbnail image or the default `no_image.jpg`.
 
 ![](images/homepage-with-activity-thumbnail.png)
 
@@ -425,7 +437,7 @@ Now it is showing a thumbnail image or default `no_image.jpg`.
 
 ## Show Activity
 
-Now that we have a list of activities, we can show the activity. We will make clickable images and names. But first, we need a Controller and Route.
+Now that we have the list of activities, we can make images and titles clickable to show the detail page for the activity. But first, we need a Controller and Route.
 
 ```sh
 php artisan make:controller ActivityController
@@ -441,7 +453,7 @@ Route::get('/activities/{activity}', [ActivityController::class, 'show'])->name(
 // ...
 ```
 
-For the Route, I am using [Route Model Binding](https://laravel.com/docs/routing#route-model-binding), meaning we can return a View and pass the activity to it in Controller.
+For the Route, I am using [Route Model Binding](https://laravel.com/docs/routing#route-model-binding), meaning we can return a View and pass the activity to it in the Controller.
 
 **app/Http/Controllers/ActivityController.php**:
 ```php
@@ -456,7 +468,7 @@ class ActivityController extends Controller
 }
 ```
 
-And in the Blade file, for now, just show all the information.
+And in the Blade file, we just show all the information for now.
 
 **resources/views/activities/show.blade.php**:
 ```blade
@@ -508,7 +520,7 @@ All that is left is to add a link to the homepage.
 // ...
 ```
 
-Now after visiting an activity, we should see a similar result:
+Now, after visiting an activity, we should see a similar result:
 
 ![](images/show-activity-page.png)
 
@@ -516,7 +528,7 @@ Now after visiting an activity, we should see a similar result:
 
 ## Seeding Dummy Data
 
-To show the client homepage, we need to add some data. Of course, it's going to be a [Seeder](https://laravel.com/docs/seeding#writing-seeders).
+We need to add some "fake" data to show this homepage to the client. Of course, it will be a [Seeder](https://laravel.com/docs/seeding#writing-seeders).
 
 ```sh
 php artisan make:seeder ActivitySeeder
@@ -553,7 +565,7 @@ class DatabaseSeeder extends Seeder
 
 ## Tests
 
-Before adding tests for the homepage, we need to fix the seeding data. In the `TestCase`, we added a `$seed` variable to run the main Seeder, but we don't need to seed activities every time. But we can change it to seed only the roles.
+Before adding tests for the homepage, we need to fix the seeding process. In the `TestCase`, we added a `$seed` variable to run the main Seeder, but we don't need to seed activities every time. However, we can change it to seed only the roles.
 
 **tests/TestCase.php**:
 ```php
