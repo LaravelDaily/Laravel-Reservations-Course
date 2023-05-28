@@ -1,10 +1,10 @@
 Ok, now our users can manage activities. Time to show them on the public front-facing website, starting with the homepage. 
 
-We need to ask the client how the homepage design would look. But meanwhile, while waiting for the answer, we can still build the functionality prototype using the Laravel Breeze design.
+Of course, in a real-life scenario, we would need a **visual design** here, but HTML/CSS things are outside this course's scope. We will stick to the default Laravel Breeze design and build a grid view here. As "homework", you can try to find and apply some Tailwind/Bootstrap theme instead or create a custom design.
 
 This is what we'll build in this lesson:
 
-![](images/first-homepage-view.png)
+![](images/homepage-with-activity-thumbnail.png)
 
 Here's the list of topics that we'll cover below:
 - Modifying Breeze layout for quickly building frontend features.
