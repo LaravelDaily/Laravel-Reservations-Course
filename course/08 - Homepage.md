@@ -575,7 +575,7 @@ abstract class TestCase extends BaseTestCase
 {
     use CreatesApplication;
 
-    protected bool $seed = true; // [tl! --]
+    protected bool $seed = true;
     protected string $seeder = RoleSeeder::class; // [tl! ++]
 }
 ```
