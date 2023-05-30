@@ -13,7 +13,27 @@
                         <div class="mb-6 bg-indigo-100 p-4 text-indigo-700">{{ session('success') }}</div>
                     @endif
 
-                    My Activities
+                    <div class="grid grid-cols-4 gap-5">
+                        @forelse($activities as $activity)
+                            <div class="space-y-3">
+                                <a href="{{ route('activity.show', $activity) }}">
+                                    <img src="{{ asset($activity->thumbnail) }}" alt="{{ $activity->name }}"> </a>
+                                <h2>
+                                    <a href="{{ route('activity.show', $activity) }}" class="text-lg font-semibold">{{ $activity->name }}</a>
+                                </h2>
+                                <time>{{ $activity->start_time }}</time>
+                                <form action="{{ route('my-activity.destroy', $activity) }}" method="POST" onsubmit="return confirm('Are you sure?')" class="inline-block">
+                                    @csrf
+                                    @method('DELETE')
+                                    <x-danger-button>
+                                        Cancel
+                                    </x-danger-button>
+                                </form>
+                            </div>
+                        @empty
+                            <p>No activities</p>
+                        @endforelse
+                    </div>
                 </div>
             </div>
         </div>

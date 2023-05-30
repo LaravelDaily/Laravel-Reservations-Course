@@ -28,6 +28,7 @@ Route::post('/activities/{activity}/register', [ActivityRegisterController::clas
 
 Route::middleware('auth')->group(function () {
     Route::get('/activities', [MyActivityController::class, 'show'])->name('my-activity.show');
+    Route::delete('/activities/{activity}', [MyActivityController::class, 'destroy'])->name('my-activity.destroy');
 
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
