@@ -186,7 +186,9 @@ class CompanyActivityController extends Controller
 
         $activity->update($request->validated() + [
             'photo' => $path ?? $activity->photo,
-        ]);
+        ]);  
+  
+        $activity->participants()->sync($request->input('guides'));
 
         return to_route('companies.activities.index', $company);
     }
