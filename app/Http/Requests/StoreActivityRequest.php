@@ -19,7 +19,7 @@ class StoreActivityRequest extends FormRequest
             'start_time'  => ['required', 'date'],
             'price'       => ['required', 'numeric'],
             'image'       => ['image', 'nullable'],
-            'guides'      => ['required', 'exists:users,id'],
+            'guide_id'    => ['required', 'exists:users,id'],
         ];
     }
 }

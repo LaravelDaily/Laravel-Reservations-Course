@@ -39,12 +39,10 @@ class CompanyActivityController extends Controller
 
         $filename = $this->uploadImage($request);
 
-        $activity = Activity::create($request->validated() + [
+        Activity::create($request->validated() + [
             'company_id' => $company->id,
             'photo' => $filename,
         ]);
-
-        $activity->participants()->sync($request->input('guides'));
 
         return to_route('companies.activities.index', $company);
     }

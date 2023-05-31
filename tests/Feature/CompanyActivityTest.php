@@ -49,13 +49,14 @@ class CompanyActivityTest extends TestCase
             'description' => 'description',
             'start_time' => '2023-09-01 10:00',
             'price' => 9999,
-            'guides' => $guide->id,
+            'guide_id' => $guide->id,
         ]);
 
         $response->assertRedirect(route('companies.activities.index', $company));
 
         $this->assertDatabaseHas('activities', [
             'company_id' => $company->id,
+            'guide_id' => $guide->id,
             'name' => 'activity',
             'description' => 'description',
             'start_time' => '2023-09-01 10:00',
@@ -78,7 +79,7 @@ class CompanyActivityTest extends TestCase
             'description' => 'description',
             'start_time' => '2023-09-01 10:00',
             'price' => 9999,
-            'guides' => $guide->id,
+            'guide_id' => $guide->id,
             'image' => $file,
         ]);
 
@@ -163,13 +164,14 @@ class CompanyActivityTest extends TestCase
             'description' => 'description',
             'start_time' => '2023-09-01 10:00',
             'price' => 9999,
-            'guides' => $guide->id,
+            'guide_id' => $guide->id,
         ]);
 
         $response->assertRedirect(route('companies.activities.index', $company));
 
         $this->assertDatabaseHas('activities', [
             'company_id' => $company->id,
+            'guide_id' => $guide->id,
             'name' => 'activity',
             'description' => 'description',
             'start_time' => '2023-09-01 10:00',
@@ -190,7 +192,7 @@ class CompanyActivityTest extends TestCase
             'description' => 'description',
             'start_time' => '2023-09-01 10:00',
             'price' => 9999,
-            'guides' => $guide->id,
+            'guide_id' => $guide->id,
         ]);
 
         $response->assertForbidden();
@@ -243,13 +245,14 @@ class CompanyActivityTest extends TestCase
             'description' => 'description',
             'start_time' => '2023-09-01 10:00',
             'price' => 9999,
-            'guides' => $guide->id,
+            'guide_id' => $guide->id,
         ]);
 
         $response->assertRedirect(route('companies.activities.index', $company->id));
 
         $this->assertDatabaseHas('activities', [
             'company_id' => $company->id,
+            'guide_id' => $guide->id,
             'name' => 'activity',
             'description' => 'description',
             'start_time' => '2023-09-01 10:00',
@@ -269,13 +272,14 @@ class CompanyActivityTest extends TestCase
             'description' => 'description',
             'start_time' => '2023-09-01 10:00',
             'price' => 9999,
-            'guides' => $guide->id,
+            'guide_id' => $guide->id,
         ]);
 
         $response->assertRedirect(route('companies.activities.index', $company));
 
         $this->assertDatabaseHas('activities', [
             'company_id' => $company->id,
+            'guide_id' => $guide->id,
             'name' => 'activity',
             'description' => 'description',
             'start_time' => '2023-09-01 10:00',

@@ -48,13 +48,14 @@
                         </div>
 
                         <div class="mt-4">
-                            <x-input-label for="guides" value="Guides" />
-                            <select name="guides" id="guides" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                            <x-input-label for="guide_id" value="Guides" />
+                            <select name="guide_id" id="guide_id" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
                                 <option>-- SELECT GUIDE --</option>
                                 @foreach($guides as $id => $name)
-                                    <option value="{{ $id }}" @selected(old('guides', $activity->participants->contains($id)))>{{ $name }}</option>
+                                    <option value="{{ $id }}" @selected(old('guide_id', $activity->guide_id) === $id)>{{ $name }}</option>
                                 @endforeach
                             </select>
+                            <x-input-error :messages="$errors->get('guide_id')" class="mt-2" />
                         </div>
 
                         <div class="mt-4">

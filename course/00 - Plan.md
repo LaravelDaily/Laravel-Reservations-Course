@@ -37,7 +37,7 @@ Also, I immediately try to envision the fields of the tables, cause that may lea
 - **Roles**: just one field `name` (I envision roles: "administrator", "company owner", "customer" and "guide")
 - **Users**: typical default Laravel DB table, adding `role_id` (*we will manage simple permissions in Gates, no DB table needed*)
 - **Companies**: just one field `name` - for activity organizers
-- **Activities**: `company_id`, `name`, `description`, `start_time`, `price`, `photo(s)`
+- **Activities**: `company_id`, `guide_id`, `name`, `description`, `start_time`, `price`, `photo(s)`
 - **Participants**: which is actually a pivot table `activity_user` with two foreign keys
 
 And that's it! So it seems that we will have a very small project, but will cover all the Laravel basics to make it very practical and learn a lot.
@@ -182,7 +182,8 @@ php artisan make:migration create_activity_user_table
 ```php
 Schema::create('activities', function (Blueprint $table) {
     $table->id();
-    $table->foreignId('company_id')->constrained();
+    $table->foreignId('company_id')->constrained();  
+    $table->foreignId('guide_id')->nullable()->constrained('users');
     $table->string('name');
     $table->text('description');
     $table->dateTime('start_time');
@@ -202,6 +203,7 @@ class Activity extends Model
 
     protected $fillable = [
         'company_id',
+        'guide_id',
         'name',
         'description',
         'start_time',
