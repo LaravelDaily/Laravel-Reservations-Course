@@ -85,7 +85,7 @@ class StoreActivityRequest extends FormRequest
             'start_time'  => ['required', 'date'],
             'price'       => ['required', 'numeric'],
             'image'       => ['image', 'nullable'],
-            'guides'      => ['required', 'exists:users,id'],
+            'guide_id'    => ['required', 'exists:users,id'],
         ];
     }
 }
@@ -108,7 +108,7 @@ class UpdateActivityRequest extends FormRequest
             'start_time'  => ['required', 'date'],
             'price'       => ['required', 'numeric'],
             'image'       => ['image', 'nullable'],
-            'guides'      => ['required', 'exists:users,id'],
+            'guide_id'    => ['required', 'exists:users,id'],
         ];
     }
 }
@@ -159,8 +159,6 @@ class CompanyActivityController extends Controller
             'photo' => $path ?? null,
         ]);
 
-        $activity->participants()->sync($request->input('guides'));
-
         return to_route('companies.activities.index', $company);
     }
 
@@ -186,9 +184,7 @@ class CompanyActivityController extends Controller
 
         $activity->update($request->validated() + [
             'photo' => $path ?? $activity->photo,
-        ]);  
-  
-        $activity->participants()->sync($request->input('guides'));
+        ]);
 
         return to_route('companies.activities.index', $company);
     }
@@ -353,13 +349,14 @@ class Activity extends Model
                         </div>
 
                         <div class="mt-4">
-                            <x-input-label for="guides" value="Guides" />
-                            <select name="guides" id="guides" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                            <x-input-label for="guide_id" value="Guides" />
+                            <select name="guide_id" id="guide_id" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
                                 <option>-- SELECT GUIDE --</option>
                                 @foreach($guides as $id => $name)
-                                    <option value="{{ $id }}" @selected(old('guides') == $id)>{{ $name }}</option>
+                                    <option value="{{ $id }}" @selected(old('guide_id') == $id)>{{ $name }}</option>
                                 @endforeach
                             </select>
+                            <x-input-error :messages="$errors->get('guide_id')" class="mt-2" />
                         </div>
 
                         <div class="mt-4">
@@ -429,13 +426,14 @@ class Activity extends Model
                         </div>
 
                         <div class="mt-4">
-                            <x-input-label for="guides" value="Guides" />
-                            <select name="guides" id="guides" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                            <x-input-label for="guide_id" value="Guides" />
+                            <select name="guide_id" id="guide_id" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
                                 <option>-- SELECT GUIDE --</option>
                                 @foreach($guides as $id => $name)
-                                    <option value="{{ $id }}" @selected(old('guides', $activity->participants->contains($id)))>{{ $name }}</option>
+                                    <option value="{{ $id }}" @selected(old('guide_id', $activity->guide_id) === $id)>{{ $name }}</option>
                                 @endforeach
                             </select>
+                            <x-input-error :messages="$errors->get('guide_id')" class="mt-2" />
                         </div>
 
                         <div class="mt-4">
@@ -619,7 +617,8 @@ class ActivityFactory extends Factory
     public function definition(): array
     {
         return [
-            'company_id'  => Company::factory(),
+            'company_id'  => Company::factory(),  
+            'guide_id'    => User::factory()->guide(),
             'name'        => fake()->name(),
             'description' => fake()->text(),
             'start_time'  => Carbon::now(),
@@ -647,10 +646,6 @@ So, we need to test the following:
 
 **tests/Feature/ActivityTest.php**:
 ```php
-<?php
-
-namespace Tests\Feature;
-
 use Tests\TestCase;
 use App\Models\User;
 use App\Models\Company;
@@ -698,13 +693,14 @@ class CompanyActivityTest extends TestCase
             'description' => 'description',
             'start_time' => '2023-09-01 10:00',
             'price' => 9999,
-            'guides' => $guide->id,
+            'guide_id' => $guide->id,
         ]);
 
         $response->assertRedirect(route('companies.activities.index', $company));
 
         $this->assertDatabaseHas('activities', [
             'company_id' => $company->id,
+            'guide_id' => $guide->id,
             'name' => 'activity',
             'description' => 'description',
             'start_time' => '2023-09-01 10:00',
@@ -727,11 +723,12 @@ class CompanyActivityTest extends TestCase
             'description' => 'description',
             'start_time' => '2023-09-01 10:00',
             'price' => 9999,
-            'guides' => $guide->id,
+            'guide_id' => $guide->id,
             'image' => $file,
         ]);
 
-        Storage::disk('public')->assertExists('activities/' . $file->hashName());
+        Storage::disk('activities')->assertExists($file->hashName());
+        Storage::disk('activities')->assertExists('thumbs/' . $file->hashName());
     }
 
     public function test_cannon_upload_non_image_file()
@@ -755,7 +752,7 @@ class CompanyActivityTest extends TestCase
 
         $response->assertSessionHasErrors(['image']);
 
-        Storage::disk('public')->assertMissing('activities/' . $file->hashName());
+        Storage::disk('activities')->assertMissing($file->hashName());
     }
 
     public function test_guides_are_shown_only_for_specific_company_in_create_form()
@@ -811,13 +808,14 @@ class CompanyActivityTest extends TestCase
             'description' => 'description',
             'start_time' => '2023-09-01 10:00',
             'price' => 9999,
-            'guides' => $guide->id,
+            'guide_id' => $guide->id,
         ]);
 
         $response->assertRedirect(route('companies.activities.index', $company));
 
         $this->assertDatabaseHas('activities', [
             'company_id' => $company->id,
+            'guide_id' => $guide->id,
             'name' => 'activity',
             'description' => 'description',
             'start_time' => '2023-09-01 10:00',
@@ -838,7 +836,7 @@ class CompanyActivityTest extends TestCase
             'description' => 'description',
             'start_time' => '2023-09-01 10:00',
             'price' => 9999,
-            'guides' => $guide->id,
+            'guide_id' => $guide->id,
         ]);
 
         $response->assertForbidden();
@@ -891,13 +889,14 @@ class CompanyActivityTest extends TestCase
             'description' => 'description',
             'start_time' => '2023-09-01 10:00',
             'price' => 9999,
-            'guides' => $guide->id,
+            'guide_id' => $guide->id,
         ]);
 
         $response->assertRedirect(route('companies.activities.index', $company->id));
 
         $this->assertDatabaseHas('activities', [
             'company_id' => $company->id,
+            'guide_id' => $guide->id,
             'name' => 'activity',
             'description' => 'description',
             'start_time' => '2023-09-01 10:00',
@@ -917,13 +916,14 @@ class CompanyActivityTest extends TestCase
             'description' => 'description',
             'start_time' => '2023-09-01 10:00',
             'price' => 9999,
-            'guides' => $guide->id,
+            'guide_id' => $guide->id,
         ]);
 
         $response->assertRedirect(route('companies.activities.index', $company));
 
         $this->assertDatabaseHas('activities', [
             'company_id' => $company->id,
+            'guide_id' => $guide->id,
             'name' => 'activity',
             'description' => 'description',
             'start_time' => '2023-09-01 10:00',

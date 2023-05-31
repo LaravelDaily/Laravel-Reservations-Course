@@ -59,13 +59,6 @@ And in the Blade, show it in the grid layout.
                     <a href="{{ route('activity.show', $activity) }}" class="text-lg font-semibold">{{ $activity->name }}</a>
                 </h2>
                 <time>{{ $activity->start_time }}</time>
-                <form action="{{ route('my-activity.destroy', $activity) }}" method="POST" onsubmit="return confirm('Are you sure?')" class="inline-block">
-                    @csrf
-                    @method('DELETE')
-                    <x-danger-button>
-                        Cancel
-                    </x-danger-button>
-                </form>
             </div>
         @empty
             <p>No activities</p>
@@ -110,7 +103,7 @@ Route::middleware('auth')->group(function () {
                 <a href="{{ route('activity.show', $activity) }}" class="text-lg font-semibold">{{ $activity->name }}</a>
             </h2>
             <time>{{ $activity->start_time }}</time>
-            <form action="{{ route('my-activity.destroy', $activity) }}" method="POST" onsubmit="return confirm('Are you sure?')" class="inline-block"> {{-- [tl! add:start] --}}
+            <form action="{{ route('my-activity.destroy', $activity) }}" method="POST" onsubmit="return confirm('Are you sure?')"> {{-- [tl! add:start] --}}
                 @csrf
                 @method('DELETE')
                 <x-danger-button>
