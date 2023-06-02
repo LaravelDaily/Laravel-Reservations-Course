@@ -56,4 +56,16 @@ class GuideActivityTest extends TestCase
             $activity3->name,
         ]);
     }
+
+    public function test_pdf_export()
+    {
+        $guide = User::factory()->guide()->create();
+        $activity = Activity::factory()->create(['guide_id' => $guide->id]);
+
+        $response = $this->actingAs($guide)->get(route('guide-activity.export', $activity));
+
+        $this->assertNotEmpty($response->getContent());
+        $this->assertEquals('application/pdf', $response->headers->get('Content-Type'));
+        $this->assertEquals('attachment; filename="' . $activity->name .'.pdf"', $response->headers->get('Content-Disposition'));
+    }
 }

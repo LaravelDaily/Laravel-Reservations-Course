@@ -18,6 +18,9 @@
                                     <a href="{{ route('activity.show', $activity) }}" class="text-lg font-semibold">{{ $activity->name }}</a>
                                 </h2>
                                 <time>{{ $activity->start_time }}</time>
+                                <a href="{{ route('guide-activity.export', $activity) }}" class="inline-flex items-center px-4 py-2 bg-gray-800 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-700 focus:bg-gray-700 active:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition ease-in-out duration-150">
+                                    Download PDF
+                                </a>
                             </div>
                         @empty
                             <p>No activities</p>
