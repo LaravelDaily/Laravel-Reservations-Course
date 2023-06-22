@@ -4,7 +4,7 @@ Of course, in a real-life scenario, we would need a **visual design** here, but 
 
 This is what we'll build in this lesson:
 
-![](images/homepage-with-activity-thumbnail.png)
+![](https://laraveldaily.com/uploads/2023/06/homepage-with-activity-thumbnail.png)
 
 Here's the list of topics that we'll cover below:
 - Modifying Breeze layout for quickly building frontend features.
@@ -204,7 +204,7 @@ And in the navigation, besides changing the route name, we need to wrap links on
 </nav>
 ```
 
-![](images/modified-layout.png)
+![](https://laraveldaily.com/uploads/2023/06/modified-layout.png)
 
 ---
 
@@ -344,7 +344,7 @@ class EventServiceProvider extends ServiceProvider
 
 After uploading images, we also have thumbnail images in the `activites/thumbs` directory.
 
-![](images/uploaded-images.png)
+![](https://laraveldaily.com/uploads/2023/06/uploaded-images.png)
 
 ---
 
@@ -408,7 +408,7 @@ class HomeController extends Controller
 
 This is what we will see:
 
-![](images/first-homepage-view.png)
+![](https://laraveldaily.com/uploads/2023/06/first-homepage-view.png)
 
 In the Blade file, I used `thumbnail` for showing thumbnails, but we don't have such a field in the DB. To display the thumbnail, we will use [Accessor](https://laravel.com/docs/eloquent-mutators#defining-an-accessor). Also, if there is no image for the activity, we will show a default image I took from the first Google result.
 
@@ -431,7 +431,7 @@ class Activity extends Model
 
 Now it is showing a thumbnail image or the default `no_image.jpg`.
 
-![](images/homepage-with-activity-thumbnail.png)
+![](https://laraveldaily.com/uploads/2023/06/homepage-with-activity-thumbnail.png)
 
 ---
 
@@ -522,7 +522,7 @@ All that is left is to add a link to the homepage.
 
 Now, after visiting an activity, we should see a similar result:
 
-![](images/show-activity-page.png)
+![](https://laraveldaily.com/uploads/2023/06/show-activity-page.png)
 
 ---
 
@@ -650,7 +650,7 @@ class CompanyActivityTest extends TestCase
 }
 ```
 
-![](images/company-activity-tests.png)
+![](https://laraveldaily.com/uploads/2023/06/company-activity-tests.png)
 
 Now let's test the homepage:
 - Page can be accessed for both guests and authenticated users.
@@ -736,7 +736,7 @@ class HomePageTest extends TestCase
 }
 ```
 
-![](images/homepage-tests.png)
+![](https://laraveldaily.com/uploads/2023/06/homepage-tests.png)
 
 And another test for the activity show. For now, we will just test that page return status `200` if activity exists and  `404` if it doesn't exist.
 
@@ -772,4 +772,4 @@ class ActivityShowTest extends TestCase
 }
 ```
 
-![](images/activity-show-test.png)
+![](https://laraveldaily.com/uploads/2023/06/activity-show-test.png)

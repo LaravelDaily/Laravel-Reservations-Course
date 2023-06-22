@@ -20,7 +20,7 @@ We already have the Controller and Blade file for the `My activities` page. But 
 
 This is how it looks in the dropdown:
 
-![](images/my-activities-navigation.png)
+![](https://laraveldaily.com/uploads/2023/06/my-activities-navigation.png)
 
 Now let's show the data! First, we need to get it in the Controller and order by `start_time`.
 
@@ -71,7 +71,7 @@ And in the Blade, show it in the grid layout.
 
 The user will see a list similar to this:
 
-![](images/my-activities-list.png)
+![](https://laraveldaily.com/uploads/2023/06/my-activities-list.png)
 
 ---
 
@@ -122,7 +122,7 @@ Route::middleware('auth')->group(function () {
 
 Now after every activity, we see a Cancel button.
 
-![](images/cancel-activity-button.png)
+![](https://laraveldaily.com/uploads/2023/06/cancel-activity-button.png)
 
 All that is left is to implement the logic. Before detaching and redirecting back, we need to check that activity belongs to a user and, if not, abort the action.
 
@@ -145,7 +145,7 @@ class MyActivityController extends Controller
 }
 ```
 
-![](images/activity-canceled.png)
+![](https://laraveldaily.com/uploads/2023/06/activity-canceled.png)
 
 ---
 
@@ -233,4 +233,4 @@ class MyActivityTest extends TestCase
 }
 ```
 
-![](images/my-activity-tests.png)
+![](https://laraveldaily.com/uploads/2023/06/my-activity-tests.png)

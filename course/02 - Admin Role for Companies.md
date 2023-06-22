@@ -60,7 +60,7 @@ Route::middleware('auth')->group(function () {
 
 Now, if you visit the companies page as a registered user, you will get a `Forbidden` page because the default role of users is **customer**, not the administrator.
 
-![](images/companies-forbidden.png)
+![](https://laraveldaily.com/uploads/2023/06/companies-forbidden.png)
 
 ---
 
@@ -91,7 +91,7 @@ Later, if we see that we are repeating this check, we will create a dedicated Bl
 
 So now, other users don't see the `Companies` in the navigation.
 
-![](images/companies-link-only-for-admins.png)
+![](https://laraveldaily.com/uploads/2023/06/companies-link-only-for-admins.png)
 
 ---
 

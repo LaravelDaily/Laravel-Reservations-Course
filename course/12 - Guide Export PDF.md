@@ -1,6 +1,6 @@
 In the last lesson, we will allow users with the guide role to export activities into a PDF file. The PDF will show the activity name, start time, and a list of participants in a table.
 
-![](images/pdf.png)
+![](https://laraveldaily.com/uploads/2023/06/pdf.png)
 
 ---
 
@@ -45,7 +45,7 @@ Route::middleware('auth')->group(function () {
 // ...
 ```
 
-![](images/download-pdf-button.png)
+![](https://laraveldaily.com/uploads/2023/06/download-pdf-button.png)
 
 Now we can use the package to download the PDF.
 
@@ -100,7 +100,7 @@ We are using Blade for outputting data.
 </table>
 ```
 
-![](images/pdf.png)
+![](https://laraveldaily.com/uploads/2023/06/pdf.png)
 
 > Of course, you might need to add some styles to the PDF file for better readability.
 

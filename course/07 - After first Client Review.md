@@ -185,7 +185,7 @@ Next, we must change the form for `Company Owner` and `Guides` CRUD. We won't ne
 //
 ```
 
-![send invitation form](images/send-invitation-form.png)
+![send invitation form](https://laraveldaily.com/uploads/2023/06/send-invitation-form.png)
 
 Also, it means we need only the email in the Form Request. The email must also check uniqueness in the `user_invitations` table instead of the `users` table. And we will change the validation message.
 
@@ -363,7 +363,7 @@ class CompanyGuideController extends Controller
 
 And the invitation email is now sent.
 
-![invitation email](images/invitation-email.png)
+![invitation email](https://laraveldaily.com/uploads/2023/06/invitation-email.png)
 
 ---
 
@@ -416,7 +416,7 @@ class RegisteredUserController extends Controller
 // ...
 ```
 
-![email auto filled from invitation](images/email-auto-filled-from-invitation.png)
+![email auto filled from invitation](https://laraveldaily.com/uploads/2023/06/email-auto-filled-from-invitation.png)
 
 All that's left is to check if the Session has the `invitation_token` key. If it does, get the invitation where the token and entered email match, and `registered_at` is null.
 
@@ -480,7 +480,7 @@ If we don't find the invitation, we throw the Validation Exception. Let's show t
 // ...
 ```
 
-![invitation error](images/invitation-error.png)
+![invitation error](https://laraveldaily.com/uploads/2023/06/invitation-error.png)
 
 ---
 
@@ -722,4 +722,4 @@ class RegistrationTest extends TestCase
 
 Let's check all the tests. Great, they are all green!
 
-![after client review tests](images/after-client-review-tests.png)
+![after client review tests](https://laraveldaily.com/uploads/2023/06/after-client-review-tests.png)

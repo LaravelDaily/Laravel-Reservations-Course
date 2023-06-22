@@ -490,7 +490,7 @@ class CompanyGuideTest extends TestCase
 }
 ```
 
-![](images/managing-guides-tests.png)
+![](https://laraveldaily.com/uploads/2023/06/managing-guides-tests.png)
 
 Great! It's all green.
 

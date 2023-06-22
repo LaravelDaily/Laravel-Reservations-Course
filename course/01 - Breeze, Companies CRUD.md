@@ -101,7 +101,7 @@ class RegisteredUserController extends Controller
 
 Now we can register, great!
 
-![](images/laravel-breeze-dashboard.png)
+![](https://laraveldaily.com/uploads/2023/06/laravel-breeze-dashboard.png)
 
 Ok, now we can move to the actual functionality, and looking at the plan, we'll start with managing companies.
 
@@ -238,7 +238,7 @@ And here's the Blade View file to show all the companies.
 </x-app-layout>
 ```
 
-![](images/companies-crud-index.png)
+![](https://laraveldaily.com/uploads/2023/06/companies-crud-index.png)
 
 ---
 
@@ -384,7 +384,7 @@ And here are both create and edit forms.
 </x-app-layout>
 ```
 
-![](images/companies-crud-edit.png)
+![](https://laraveldaily.com/uploads/2023/06/companies-crud-edit.png)
 
 ---
 

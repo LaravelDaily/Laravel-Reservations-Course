@@ -491,6 +491,6 @@ class CompanyUserTest extends TestCase
 }
 ```
 
-![](images/admin-manages-users-tests.png)
+![](https://laraveldaily.com/uploads/2023/06/admin-manages-users-tests.png)
 
 In the next lesson, we will expand the tests, after adding the User management feature to another role.

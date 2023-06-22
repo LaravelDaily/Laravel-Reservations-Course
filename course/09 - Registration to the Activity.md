@@ -51,11 +51,11 @@ class User extends Authenticatable
 
 When the user isn't registered for the activity, the expected result looks like this:
 
-![](images/register-to-activity-button.png)
+![](https://laraveldaily.com/uploads/2023/06/register-to-activity-button.png)
 
 Otherwise, if the user is already registered, the expected result will look like this:
 
-![](images/already-registered-to-activity.png)
+![](https://laraveldaily.com/uploads/2023/06/already-registered-to-activity.png)
 
 Next, we need a Controller and a Route.
 
@@ -161,7 +161,7 @@ class MyActivityController extends Controller
 
 For now, it will only show the text `My Activities`, and will show the success message if it exists.
 
-![](images/my-activities-hard-coded-page.png)
+![](https://laraveldaily.com/uploads/2023/06/my-activities-hard-coded-page.png)
 
 Now let's get back to registering user to the activity, and let's create a Notification and send it.
 
@@ -225,7 +225,7 @@ class ActivityRegisterController extends Controller
 
 The mail message looks like this:
 
-![](images/registered-to-activity-mail.png)
+![](https://laraveldaily.com/uploads/2023/06/registered-to-activity-mail.png)
 
 ---
 
@@ -291,7 +291,7 @@ class RegisteredUserController extends Controller
 
 After registering to the activity, we should be redirected to the `My activities` page with the success message.
 
-![](images/successfully-registered-to-activity.png)
+![](https://laraveldaily.com/uploads/2023/06/successfully-registered-to-activity.png)
 
 ---
 
@@ -407,4 +407,4 @@ class RegisterActivityTest extends TestCase
 }
 ```
 
-![](images/register-activity-tests.png)
+![](https://laraveldaily.com/uploads/2023/06/register-activity-tests.png)

@@ -404,6 +404,6 @@ class CompanyUserTest extends TestCase
 }
 ```
 
-![](images/company-owner-manages-users-tests.png)
+![](https://laraveldaily.com/uploads/2023/06/company-owner-manages-users-tests.png)
 
 Good. All the tests passed!

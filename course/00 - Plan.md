@@ -6,7 +6,7 @@ Our first goal, before even starting the coding process, is to transform the ini
 
 Let's take a look at the initial description of the project, based on a [real job from Upwork](https://www.upwork.com/jobs/~013ff67ca387ff9ae2):
 
-![](images/upwork-job.png)
+![](https://laraveldaily.com/uploads/2023/06/upwork-job.png)
 
 This is how typically clients describe the projects, right? In their own words, briefly, without digging into details. And that's fine, they are not specialists.
 
@@ -242,11 +242,11 @@ And now, we run the migrations on the empty DB table...
 php artisan migrate
 ```
 
-![](images/first-migrate.png)
+![](https://laraveldaily.com/uploads/2023/06/first-migrate.png)
 
 Now, when we have the DB schema, we can use any external tool to export it as a visual, with relationships. I personally use [DBeaver](https://dbeaver.io/) for this, which gives us this result:
 
-![](images/db-schema-dbeaver.png)
+![](https://laraveldaily.com/uploads/2023/06/db-schema-dbeaver.png)
 
 Great!
 

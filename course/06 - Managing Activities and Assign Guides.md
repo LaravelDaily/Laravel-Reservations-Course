@@ -59,7 +59,7 @@ As for the navigation, we will add the `Activities` link after the `Guides`.
 // ...
 ```
 
-![activities navigation link](images/activities-navigation-link.png)
+![activities navigation link](https://laraveldaily.com/uploads/2023/06/activities-navigation-link.png)
 
 For the validation, again, the [Form Requests](https://laravel.com/docs/validation#form-request-validation).
 
@@ -280,7 +280,7 @@ class CompanyActivityController extends Controller
 </x-app-layout>
 ```
 
-![activities list](images/activities-list.png)
+![activities list](https://laraveldaily.com/uploads/2023/06/activities-list.png)
 
 Because we are saving the price in cents, before adding value to the DB, we need to multiply it by 100. And the other way around: to show the correct value in the front end, we need to divide by 100. We will use [Accessors & Mutators](https://laravel.com/docs/eloquent-mutators#accessors-and-mutators) for this.
 
@@ -372,7 +372,7 @@ class Activity extends Model
 </x-app-layout>
 ```
 
-![create activity](images/create-activity.png)
+![create activity](https://laraveldaily.com/uploads/2023/06/create-activity.png)
 
 **resources/views/companies/activities/edit.blade.php**:
 ```blade
@@ -449,7 +449,7 @@ class Activity extends Model
 </x-app-layout>
 ```
 
-![edit activity](images/edit-activity.png)
+![edit activity](https://laraveldaily.com/uploads/2023/06/edit-activity.png)
 
 ---
 
@@ -933,7 +933,7 @@ class CompanyActivityTest extends TestCase
 }
 ```
 
-![activities tests](images/activities-tests.png)
+![activities tests](https://laraveldaily.com/uploads/2023/06/activities-tests.png)
 
 I think we created enough functionality to show it to the client and see what they say so far. Such a feedback loop is very important: the earlier we learn about the changes, the less code refactoring we need.
 

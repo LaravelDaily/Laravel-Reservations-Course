@@ -108,7 +108,7 @@ And here's the Blade file to show the activities.
 
 Now the `My activities` page should look like this:
 
-![](images/guide-activities.png)
+![](https://laraveldaily.com/uploads/2023/06/guide-activities.png)
 
 ---
 
@@ -183,4 +183,4 @@ class GuideActivityTest extends TestCase
 }
 ```
 
-![](images/guide-activities-tests.png)
+![](https://laraveldaily.com/uploads/2023/06/guide-activities-tests.png)
