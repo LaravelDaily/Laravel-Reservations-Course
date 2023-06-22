@@ -1,10 +1,12 @@
-In this lesson, we will add a page where the user with the guide role will be able to see activities assigned to him.
+In this lesson, we will add a page where the user with the `Guide` role will be able to see activities assigned to them.
 
 ---
 
 ## Showing Activities Assigned to Guide
 
-The page `My activities` page for guides will be almost identical. The only difference will be the button instead of `Cancel`, it will be `Export to PDF`. The export functionality will be added in the next lesson. First, let's create a new Route and Controller. The Route endpoint will be different for the guides.
+The page `My activities` page for guides will be almost identical to the one we have just built for the regular users. The only difference will be the button `Export to PDF` instead of `Cancel`. The export functionality will be added in the next lesson. 
+
+First, let's create a new Route and Controller. The Route endpoint will be different for the guides.
 
 ```sh
 php artisan make:controller GuideActivityController
@@ -25,7 +27,7 @@ Route::middleware('auth')->group(function () {
 });
 ```
 
-Now we need to send only the users with the role of guide to this new endpoint. Again, we will make a simple if because this check is not repeating elsewhere.
+Now we need to send only the users with the role of `Guide` to this new page. Again, we will make a simple if-statement because this check is not repeating elsewhere.
 
 **resources/views/layouts/navigation.blade.php**:
 ```blade
@@ -66,7 +68,7 @@ class GuideActivityController extends Controller
 }
 ```
 
-And the Blade file to show the activities.
+And here's the Blade file to show the activities.
 
 **resources/views/activities/guide-activities.blade.php**:
 ```blade
@@ -102,9 +104,9 @@ And the Blade file to show the activities.
 </x-app-layout>
 ```
 
-In the showing of activities, we have the same code in three places. So it would be better to extract it into a component. But because this is just a mock-up to show the client how the functionality works quickly, I think it is not worth it. When the final design is implemented, then I would every repeated part into a Blade component.
+**Notice**: In the showing of activities, we have the same code in three places. So it would be better to extract it into a component. But because this is just a mock-up to show the client how the functionality works quickly, I think it is not worth it. When the final design is implemented, then I would refactor every repeated part into a Blade component.
 
-Now the `My activities` page should look similar to the image below:
+Now the `My activities` page should look like this:
 
 ![](images/guide-activities.png)
 
@@ -113,12 +115,13 @@ Now the `My activities` page should look similar to the image below:
 ## Tests
 
 So, what will we test in this lesson?
-- User with the guide role can access the page; other users cannot.
-- Guide sees activities only assigned to him.
+
+- User with the guide role can access the page and other users cannot.
+- Guide sees activities only assigned to them.
 - Guide sees activities in the correct order.
 
 ```sh
-php aritsan make:test GuideActivityTest
+php artisan make:test GuideActivityTest
 ```
 
 **tests/Feature/GuideActivityTest.php**:

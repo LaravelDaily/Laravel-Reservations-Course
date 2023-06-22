@@ -1,10 +1,10 @@
-Now that we show activities, we need a button to allow the user to register for an activity. If the user is a guest, he will first be redirected to the registration page and, after registration, will be registered to the activity. After successful registration for the activity user will be redirected to the `My Activities` page and will receive an email.
+Now that we show activities, we need a button to allow the user to register for an activity. If the user is a guest, he will first be redirected to the registration page and, after registration, will be registered to the activity. Then, after successful registration for the activity, user will be redirected to the `My Activities` page and will receive an email.
 
 ---
 
 ## Registering Authenticated User to the Activity
 
-The `Register to activity` button will make a POST request. So, first, let's add this button to the show activities page above the thumbanil image.
+The `Register to activity` button will make a `POST` request. So, first, let's add this button to the show activities page above the thumbnail image.
 
 **resources/views/activities/show.blade.php**:
 ```php
@@ -32,7 +32,7 @@ The `Register to activity` button will make a POST request. So, first, let's add
 </x-app-layout>
 ```
 
-As you can see here, I also added an if statement. We won't show a button if the user is already registered for the activity. But for this to work, we must add a `activities` relation to the `User` Model.
+As you can see here, I also added an if-statement: we won't show a button if the user is already registered for the activity. But for this to work, we must add an `activities` relation to the `User` Model.
 
 **app/Models/User.php**:
 ```php
@@ -49,11 +49,11 @@ class User extends Authenticatable
 }
 ```
 
-When the user isn't registered for the activity, the expected result looks like this in the image below:
+When the user isn't registered for the activity, the expected result looks like this:
 
 ![](images/register-to-activity-button.png)
 
-And when the user is already registered for the activity, the expected result will look like this in the image below:
+Otherwise, if the user is already registered, the expected result will look like this:
 
 ![](images/already-registered-to-activity.png)
 
@@ -74,12 +74,13 @@ Route::post('/activities/{activity}/register', [ActivityRegisterController::clas
 // ...
 ```
 
-In the Controller, we need to do a couple of things:
-- If the user is a guest, redirect to the `register` route with the `activity` as a GET parameter.
-- Abort action if the authenticated user tries to register more than once.
+In the Controller, we need to perform a couple of things:
+
+- If the user is a guest, redirect to the `register` route with the `activity` as a `GET` parameter.
+- Abort the action if the authenticated user tries to register more than once.
 - Attach activity for the user.
 - Send a Notification to the user.
-- And redirect to the `my activities` page with the success message.
+- And redirect to the `My activities` page with the success message.
 
 **app/Http/Controllers/ActivityRegisterController.php**:
 ```php
@@ -103,7 +104,7 @@ class ActivityRegisterController extends Controller
 }
 ```
 
-Now let's quickly create a hard-coded `my activities` page so that redirect would work.
+Let's quickly create a `My activities` page (*blank for now*) so that redirect would work.
 
 ```sh
 php artisan make:controller MyActivityController
@@ -158,11 +159,11 @@ class MyActivityController extends Controller
 </x-app-layout>
 ```
 
-For now, it will only show the text `My Activities`, and when redirected with the success message will show that message.
+For now, it will only show the text `My Activities`, and will show the success message if it exists.
 
 ![](images/my-activities-hard-coded-page.png)
 
-Now let's get back to the registering user to the activity, and let's create a Notification and send it.
+Now let's get back to registering user to the activity, and let's create a Notification and send it.
 
 ```sh
 php artisan make:notification RegisteredToActivityNotification
@@ -222,7 +223,7 @@ class ActivityRegisterController extends Controller
 }
 ```
 
-The mail message looks like the image below:
+The mail message looks like this:
 
 ![](images/registered-to-activity-mail.png)
 
@@ -230,7 +231,9 @@ The mail message looks like the image below:
 
 ## Registering Guest to the Activity
 
-Now that authenticated users can register for the activity, let's implement registration for the guests. We have already made the redirect to the `register` page. I think we can use Sessions again to automatically register to the activity as we did with the invitations.
+Now that authenticated users can register for the activity, let's implement registration for **guests**. 
+
+We have already made the redirect to the `register` page. I think we can use Sessions again to automatically register to the activity as we did with the invitations.
 
 First, we need to set the session.
 
@@ -257,7 +260,7 @@ And then, after the submit button is clicked, we need to:
 - Get the activity and check if the session is set.
 - Attach activity to the just registered user.
 - Send a Notification to the user.
-- Redirect to the `my activities` route with the success message.
+- Redirect to the `My activities` route with the success message.
 
 **app/Http/Controllers/Auth/RegisteredUserController.php**:
 ```php
@@ -286,7 +289,7 @@ class RegisteredUserController extends Controller
 }
 ```
 
-After registering to the activity we should be redirected to the my activities page with the success message.
+After registering to the activity, we should be redirected to the `My activities` page with the success message.
 
 ![](images/successfully-registered-to-activity.png)
 
@@ -294,12 +297,13 @@ After registering to the activity we should be redirected to the my activities p
 
 ## Tests
 
-And now the last part of every lesson is the tests. In these tests, we will test the following:
-- The text for the user who is registered to the activity and isn't is correct.
-- Authenticated users can register for the activity, receive a notification, and are redirected to the `my activities` page.
+And now the last part of every lesson: tests. We will test the following:
+
+- The text for the user who is/isn't registered to the activity is correct.
+- Authenticated users can register for the activity, receive a notification, and are redirected to the `My activities` page.
 - Authenticated users cannot register more than once for the same activity.
-- Guest gets redirected to the `register` page with the correct GET parameter.
-- After registering, the user gets a Notification and is redirected to the `my activities` page.
+- Guest gets redirected to the `Register` page with the correct `GET` parameter.
+- After registering, the user gets a Notification and is redirected to the `My activities` page.
 
 ```sh
 php aritsan make:test RegisterActivityTest

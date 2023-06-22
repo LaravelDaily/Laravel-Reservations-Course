@@ -1,4 +1,4 @@
-We have made that users can register for the activity and get redirected to the `my activities` page. Now let's show activities on the `my activities` page and add a button to cancel them.
+Now, let's show activities on the `My activities` page and add a button to cancel them.
 
 ---
 
@@ -22,7 +22,7 @@ This is how it looks in the dropdown:
 
 ![](images/my-activities-navigation.png)
 
-Now let's show the data! First, we need to get it in the Controller and order by the `start_time`.
+Now let's show the data! First, we need to get it in the Controller and order by `start_time`.
 
 **app/Http/Controllers/MyActivityController.php**:
 ```php
@@ -69,7 +69,7 @@ And in the Blade, show it in the grid layout.
 </x-app-layout>
 ```
 
-The user will see a similar list in the image below:
+The user will see a list similar to this:
 
 ![](images/my-activities-list.png)
 
@@ -77,7 +77,9 @@ The user will see a similar list in the image below:
 
 ## Cancel Activity
 
-To cancel the activity, it's straightforward. We need to detach activity from the users' activities relationship. First, we will add a new route and a button to cancel activity below the start time.
+Canceling the activity is straightforward. We need to detach the activity from the user activities relationship. 
+
+First, we will add a new Route and a button to cancel activity below the start time.
 
 **routes/web.php**:
 ```php
@@ -118,7 +120,7 @@ Route::middleware('auth')->group(function () {
 // ...
 ```
 
-Now after every activity, we see a cancel button.
+Now after every activity, we see a Cancel button.
 
 ![](images/cancel-activity-button.png)
 
@@ -150,11 +152,12 @@ class MyActivityController extends Controller
 ## Tests
 
 And let's add the tests for the `My activity` page. Here we will test:
-- User sees only his activities.
-- The user can cancel his activities and cannot cancel for other users.
+
+- User sees only their own activities.
+- The user can cancel their activities and cannot cancel for other users.
 
 ```sh
-php aritsan make:test MyActivityTest
+php artisan make:test MyActivityTest
 ```
 
 **tests/Feature/MyActivityTest.php**:

@@ -6,7 +6,7 @@ In the last lesson, we will allow users with the guide role to export activities
 
 ## Exporting to PDF
 
-We will use the package `barryvdh/laravel-dompdf` for exporting PDF, a Laravel wrapper for the DOMPDF package.
+We will use the package [barryvdh/laravel-dompdf](https://github.com/barryvdh/laravel-dompdf) for exporting PDF. It's a Laravel wrapper for the DOMPDF package.
 
 ```sh
 composer require barryvdh/laravel-dompdf
