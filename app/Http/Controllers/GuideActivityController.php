@@ -11,7 +11,7 @@ class GuideActivityController extends Controller
 {
     public function show()
     {
-        abort_if(auth()->user()->role_id !== Role::GUIDE->value, Response::HTTP_FORBIDDEN);
+        abort_if(auth()->user()->role_id !== Role::GUIDE, Response::HTTP_FORBIDDEN);
 
         $activities = Activity::where('guide_id', auth()->id())->orderBy('start_time')->get();
 
@@ -20,7 +20,7 @@ class GuideActivityController extends Controller
 
     public function export(Activity $activity)
     {
-        abort_if(auth()->user()->role_id !== Role::GUIDE->value, Response::HTTP_FORBIDDEN);
+        abort_if(auth()->user()->role_id !== Role::GUIDE, Response::HTTP_FORBIDDEN);
 
         $data = $activity->load(['participants' => function($query) {
             $query->orderByPivot('created_at');

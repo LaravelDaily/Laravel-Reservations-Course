@@ -11,7 +11,7 @@ class CompanyActivityPolicy
 {
     public function before(User $user): bool|null
     {
-        if ($user->role_id === Role::ADMINISTRATOR->value) {
+        if ($user->role_id === Role::ADMINISTRATOR) {
             return true;
         }
 
@@ -23,7 +23,7 @@ class CompanyActivityPolicy
      */
     public function viewAny(User $user, Company $company): bool
     {
-        return $user->role_id === Role::COMPANY_OWNER->value && $user->company_id === $company->id;
+        return $user->role_id === Role::COMPANY_OWNER && $user->company_id === $company->id;
     }
 
     /**
@@ -39,7 +39,7 @@ class CompanyActivityPolicy
      */
     public function create(User $user, Company $company): bool
     {
-        return $user->role_id === Role::COMPANY_OWNER->value && $user->company_id === $company->id;
+        return $user->role_id === Role::COMPANY_OWNER && $user->company_id === $company->id;
     }
 
     /**
@@ -47,7 +47,7 @@ class CompanyActivityPolicy
      */
     public function update(User $user, Activity $activity): bool
     {
-        return $user->role_id === Role::COMPANY_OWNER->value && $user->company_id === $activity->company_id;
+        return $user->role_id === Role::COMPANY_OWNER && $user->company_id === $activity->company_id;
     }
 
     /**
@@ -55,6 +55,6 @@ class CompanyActivityPolicy
      */
     public function delete(User $user, Activity $activity): bool
     {
-        return $user->role_id === Role::COMPANY_OWNER->value && $user->company_id === $activity->company_id;
+        return $user->role_id === Role::COMPANY_OWNER && $user->company_id === $activity->company_id;
     }
 }

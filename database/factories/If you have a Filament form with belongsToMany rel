@@ -1,0 +1,132 @@
+If you have a Filament form with a belongsToMany relationship, what if you want to limit the number of options to be selected? Let me show you a few ways to implement it.
+
+---
+
+## Setup: Select Multiple
+
+Let's say we assign categories to a product but want a maximum of 2 categories per product.
+
+First, the structure of our demo database is this:
+
+**Migration**:
+```php
+Schema::create('category_product', function (Blueprint $table) {
+    $table->foreignId('category_id')->constrained();
+    $table->foreignId('product_id')->constrained();
+});
+```
+
+**app/Models/Product.php**:
+```php
+class Product extends Model
+{
+    public function categories()
+    {
+        return $this->belongsToMany(Category::class);
+    }
+}
+```
+
+And then we can implement a typical multi-select in the Filament resource, with `Select::make()` [using relationships](https://filamentphp.com/docs/2.x/forms/fields#populating-automatically-from-a-relationship):
+
+**app/Filament/Resources/ProductResource.php**:
+```php
+class ProductResource extends Resource
+{
+    // ...
+
+    public static function form(Form $form): Form
+    {
+        return $form
+            ->columns(1)
+            ->schema([
+                Forms\Components\TextInput::make('name')->required(),
+                Forms\Components\Select::make('categories')
+                    ->multiple()
+                    ->relationship('categories', 'name'),
+            ]);
+    }
+}
+```
+
+Visually, it looks like this:
+
+![](https://laraveldaily.com/uploads/2023/06/filament-categories-multiselect.png)
+
+When the categories are chosen, it looks like this:
+
+![](https://laraveldaily.com/uploads/2023/06/filament-categories-multiselect-selected.png)
+
+Now, how do we limit that to be able to choose only two elements max?
+
+---
+
+## Option 1. Limit with maxItems()
+
+The most straightforward option is very simple:
+
+```php
+Forms\Components\Select::make('categories')
+    ->multiple()
+    ->relationship('categories', 'name')
+    ->maxItems(2),
+```
+
+Then, the validation would happen immediately on the front-end and wouldn't even allow us to choose the third category.
+
+![](https://laraveldaily.com/uploads/2023/06/filament-categories-only2.png)
+
+But there's an option to use a different Form Element for multi-select.
+
+---
+
+## Option 2. CheckboxList with Validation Rule
+
+With the `belongsToMany` relationship, we can use not only `Select` but also a `CheckboxList`, which is suitable if you have a small number of options, all visible at the same time without extra clicking or typing.
+
+![](https://laraveldaily.com/uploads/2023/06/filament-categories-checkbox-list.png)
+
+That form element doesn't have the `maxItems()` method, unfortunately, but we can perform the validation on the back-end just by adding a Laravel validation rule `max:2` here:
+
+```php
+Forms\Components\CheckboxList::make('categories')
+    ->relationship('categories', 'name')
+    ->rules(['max:2'])
+```
+
+And we have the validation error when 3 categories are chosen!
+
+![](https://laraveldaily.com/uploads/2023/06/filament-categories-checkbox-list-validated.png)
+
+But the problem is the validation message itself. For validation rules like `max` or `size`, the default assumption is that it's validating a *string*, so the error message is talking about *characters*. Not user-friendly, is it?
+
+Two solutions here.
+
+The first is just to provide the `array` validation rule along with the `max` rule:
+
+```php
+->rules(['array', 'max:2'])
+```
+
+Then the message is automatically changed for a better one:
+
+![](https://laraveldaily.com/uploads/2023/06/filament-categories-array-max.png)
+
+Or, if you want to customize the message completely, you may just add an **inline** validation rule, according to [Filament docs](https://filamentphp.com/docs/2.x/forms/validation#custom-rules):
+
+```php
+Forms\Components\CheckboxList::make('categories')
+    ->rules([
+        function () {
+            return function (string $attribute, $value, $fail) {
+                if (count($value) > 2) {
+                    $fail("Max 2 categories allowed");
+                }
+            };
+        },
+    ])
+```
+
+The result:
+
+![](https://laraveldaily.com/uploads/2023/06/filament-categories-custom-rule.png)

@@ -27,7 +27,7 @@ class CompanyActivityController extends Controller
         $this->authorize('create', $company);
 
         $guides = User::where('company_id', $company->id)
-            ->where('role_id', Role::GUIDE->value)
+            ->where('role_id', Role::GUIDE)
             ->pluck('name', 'id');
 
         return view('companies.activities.create', compact('guides', 'company'));
@@ -54,7 +54,7 @@ class CompanyActivityController extends Controller
         $this->authorize('update', $company);
 
         $guides = User::where('company_id', $company->id)
-            ->where('role_id', Role::GUIDE->value)
+            ->where('role_id', Role::GUIDE)
             ->pluck('name', 'id');
 
         return view('companies.activities.edit', compact('guides', 'activity', 'company'));

@@ -18,7 +18,7 @@ class CompanyUserController extends Controller
     {
         $this->authorize('viewAny', $company);
 
-        $users = $company->users()->where('role_id', Role::COMPANY_OWNER->value)->get();
+        $users = $company->users()->where('role_id', Role::COMPANY_OWNER)->get();
 
         return view('companies.users.index', compact('company', 'users'));
     }
@@ -38,7 +38,7 @@ class CompanyUserController extends Controller
             'email' => $request->input('email'),
             'token' => Str::uuid(),
             'company_id' => $company->id,
-            'role_id' => Role::COMPANY_OWNER->value,
+            'role_id' => Role::COMPANY_OWNER,
         ]);
 
         Mail::to($request->input('email'))->send(new UserRegistrationInvite($invitation));

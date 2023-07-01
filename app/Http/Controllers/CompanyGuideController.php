@@ -18,7 +18,7 @@ class CompanyGuideController extends Controller
     {
         $this->authorize('viewAny', $company);
 
-        $guides = $company->users()->where('role_id', Role::GUIDE->value)->get();
+        $guides = $company->users()->where('role_id', Role::GUIDE)->get();
 
         return view('companies.guides.index', compact('company', 'guides'));
     }
@@ -38,7 +38,7 @@ class CompanyGuideController extends Controller
             'email' => $request->input('email'),
             'token' => Str::uuid(),
             'company_id' => $company->id,
-            'role_id' => Role::GUIDE->value,
+            'role_id' => Role::GUIDE,
         ]);
 
         Mail::to($request->input('email'))->send(new UserRegistrationInvite($invitation));

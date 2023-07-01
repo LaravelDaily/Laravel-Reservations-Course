@@ -16,12 +16,12 @@
                         {{ __('Dashboard') }}
                     </x-nav-link>
                     @auth
-                        @if(auth()->user()->role_id === \App\Enums\Role::ADMINISTRATOR->value)
+                        @if(auth()->user()->role_id === \App\Enums\Role::ADMINISTRATOR)
                             <x-nav-link :href="route('companies.index')" :active="request()->routeIs('companies.index')">
                                 {{ __('Companies') }}
                             </x-nav-link>
                         @endif
-                        @if(auth()->user()->role_id === \App\Enums\Role::COMPANY_OWNER->value)
+                        @if(auth()->user()->role_id === \App\Enums\Role::COMPANY_OWNER)
                             <x-nav-link :href="route('companies.users.index', auth()->user()->company_id)" :active="request()->routeIs('companies.users.*')">
                                 {{ __('Administrators') }}
                             </x-nav-link>
@@ -56,7 +56,7 @@
                             <x-dropdown-link :href="route('profile.edit')">
                                 {{ __('Profile') }}
                             </x-dropdown-link>
-                            @if(auth()->user()->role_id === \App\Enums\Role::GUIDE->value)
+                            @if(auth()->user()->role_id === \App\Enums\Role::GUIDE)
                                 <x-dropdown-link :href="route('guide-activity.show')">
                                     {{ __('My Activities') }}
                                 </x-dropdown-link>
