@@ -71,14 +71,11 @@ class CompanyUserTest extends TestCase
         $company = Company::factory()->create();
         $user = User::factory()->admin()->create(['company_id' => $company->id]);
 
-        $response = $this->actingAs($user)->delete(route('companies.users.update', [$company->id, $user->id]));
+        $response = $this->actingAs($user)->delete(route('companies.users.destroy', [$company->id, $user->id]));
 
         $response->assertRedirect(route('companies.users.index', $company->id));
 
-        $this->assertDatabaseMissing('users', [
-            'name' => 'updated user',
-            'email' => 'test@update.com',
-        ]);
+        $this->assertSoftDeleted($user);
     }
 
     public function test_company_owner_can_view_his_companies_users()
@@ -196,14 +193,11 @@ class CompanyUserTest extends TestCase
         $company = Company::factory()->create();
         $user = User::factory()->companyOwner()->create(['company_id' => $company->id]);
 
-        $response = $this->actingAs($user)->delete(route('companies.users.update', [$company->id, $user->id]));
+        $response = $this->actingAs($user)->delete(route('companies.users.destroy', [$company->id, $user->id]));
 
         $response->assertRedirect(route('companies.users.index', $company->id));
 
-        $this->assertDatabaseMissing('users', [
-            'name' => 'updated user',
-            'email' => 'test@update.com',
-        ]);
+        $this->assertSoftDeleted($user);
     }
 
     public function test_company_owner_cannot_delete_user_for_other_company()
@@ -212,7 +206,7 @@ class CompanyUserTest extends TestCase
         $company2 = Company::factory()->create();
         $user = User::factory()->companyOwner()->create(['company_id' => $company->id]);
 
-        $response = $this->actingAs($user)->delete(route('companies.users.update', [$company2->id, $user->id]));
+        $response = $this->actingAs($user)->delete(route('companies.users.destroy', [$company2->id, $user->id]));
 
         $response->assertForbidden();
     }

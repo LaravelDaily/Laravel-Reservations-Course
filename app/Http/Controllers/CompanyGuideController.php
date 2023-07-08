@@ -18,7 +18,7 @@ class CompanyGuideController extends Controller
     {
         $this->authorize('viewAny', $company);
 
-        $guides = $company->users()->where('role_id', Role::GUIDE)->get();
+        $guides = $company->users()->where('role_id', Role::GUIDE->value)->get();
 
         return view('companies.guides.index', compact('company', 'guides'));
     }

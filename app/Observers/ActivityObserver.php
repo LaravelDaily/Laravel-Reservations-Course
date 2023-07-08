@@ -14,4 +14,12 @@ class ActivityObserver
             Storage::disk('activities')->delete('thumbs/' . $activity->getOriginal('photo'));
         }
     }
+
+    public function deleting(Activity $activity): void
+    {
+        if ($activity->photo) {
+            Storage::disk('activities')->delete($activity->photo);
+            Storage::disk('activities')->delete('thumbs/' . $activity->photo);
+        }
+    }
 }
