@@ -106,7 +106,7 @@ class CompanyUserTest extends TestCase
         Mail::fake();
 
         $company = Company::factory()->create();
-        $user = User::factory()->admin()->create();
+        $user = User::factory()->companyOwner()->create(['company_id' => $company->id]);
 
         $response = $this->actingAs($user)->post(route('companies.users.store', $company->id), [
             'email' => 'test@test.com',
