@@ -7,6 +7,7 @@ use App\Models\User;
 use App\Models\Company;
 use App\Models\UserInvitation;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Gate;
 use App\Mail\UserRegistrationInvite;
 use Illuminate\Support\Facades\Mail;
 use App\Http\Requests\StoreGuideRequest;
@@ -16,7 +17,7 @@ class CompanyGuideController extends Controller
 {
     public function index(Company $company)
     {
-        $this->authorize('viewAny', $company);
+        Gate::authorize('viewAny', $company);
 
         $guides = $company->users()->where('role_id', Role::GUIDE->value)->get();
 
@@ -25,14 +26,14 @@ class CompanyGuideController extends Controller
 
     public function create(Company $company)
     {
-        $this->authorize('create', $company);
+        Gate::authorize('create', $company);
 
         return view('companies.guides.create', compact('company'));
     }
 
     public function store(StoreGuideRequest $request, Company $company)
     {
-        $this->authorize('create', $company);
+        Gate::authorize('create', $company);
 
         $invitation = UserInvitation::create([
             'email' => $request->input('email'),
@@ -48,14 +49,14 @@ class CompanyGuideController extends Controller
 
     public function edit(Company $company, User $guide)
     {
-        $this->authorize('update', $company);
+        Gate::authorize('update', $company);
 
         return view('companies.guides.edit', compact('company', 'guide'));
     }
 
     public function update(UpdateGuideRequest $request, Company $company, User $guide)
     {
-        $this->authorize('update', $company);
+        Gate::authorize('update', $company);
 
         $guide->update($request->validated());
 
@@ -64,7 +65,7 @@ class CompanyGuideController extends Controller
 
     public function destroy(Company $company, User $guide)
     {
-        $this->authorize('delete', $company);
+        Gate::authorize('delete', $company);
 
         $guide->delete();
 

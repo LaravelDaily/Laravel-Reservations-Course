@@ -96,8 +96,9 @@ class CompanyGuideTest extends TestCase
     {
         $company = Company::factory()->create();
         $user = User::factory()->companyOwner()->create(['company_id' => $company->id]);
+        $guide = User::factory()->guide()->create(['company_id' => $company->id]);
 
-        $response = $this->actingAs($user)->put(route('companies.guides.update', [$company->id, $user->id]), [
+        $response = $this->actingAs($user)->put(route('companies.guides.update', [$company->id, $guide->id]), [
             'name' => 'updated user',
             'email' => 'test@update.com',
         ]);
@@ -129,15 +130,13 @@ class CompanyGuideTest extends TestCase
     {
         $company = Company::factory()->create();
         $user = User::factory()->companyOwner()->create(['company_id' => $company->id]);
+        $guide = User::factory()->guide()->create(['company_id' => $company->id]);
 
-        $response = $this->actingAs($user)->delete(route('companies.guides.update', [$company->id, $user->id]));
+        $response = $this->actingAs($user)->delete(route('companies.guides.update', [$company->id, $guide->id]));
 
         $response->assertRedirect(route('companies.guides.index', $company->id));
 
-        $this->assertDatabaseMissing('users', [
-            'name' => 'updated user',
-            'email' => 'test@update.com',
-        ]);
+        $this->assertSoftDeleted($guide);
     }
 
     public function test_company_owner_cannot_delete_guide_for_other_company()

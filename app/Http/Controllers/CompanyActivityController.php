@@ -6,7 +6,8 @@ use App\Enums\Role;
 use App\Models\User;
 use App\Models\Company;
 use App\Models\Activity;
-use Intervention\Image\Facades\Image;
+use Illuminate\Support\Facades\Gate;
+use Intervention\Image\ImageManager;
 use Illuminate\Support\Facades\Storage;
 use App\Http\Requests\StoreActivityRequest;
 use App\Http\Requests\UpdateActivityRequest;
@@ -15,7 +16,7 @@ class CompanyActivityController extends Controller
 {
     public function index(Company $company)
     {
-        $this->authorize('viewAny', $company);
+        Gate::authorize('viewAny', $company);
 
         $company->load('activities');
 
@@ -24,7 +25,7 @@ class CompanyActivityController extends Controller
 
     public function create(Company $company)
     {
-        $this->authorize('create', $company);
+        Gate::authorize('create', $company);
 
         $guides = User::where('company_id', $company->id)
             ->where('role_id', Role::GUIDE)
@@ -35,7 +36,7 @@ class CompanyActivityController extends Controller
 
     public function store(StoreActivityRequest $request, Company $company)
     {
-        $this->authorize('create', $company);
+        Gate::authorize('create', $company);
 
         $filename = $this->uploadImage($request);
 
@@ -51,7 +52,7 @@ class CompanyActivityController extends Controller
 
     public function edit(Company $company, Activity $activity)
     {
-        $this->authorize('update', $company);
+        Gate::authorize('update', $company);
 
         $guides = User::where('company_id', $company->id)
             ->where('role_id', Role::GUIDE)
@@ -62,7 +63,7 @@ class CompanyActivityController extends Controller
 
     public function update(UpdateActivityRequest $request, Company $company, Activity $activity)
     {
-        $this->authorize('update', $company);
+        Gate::authorize('update', $company);
 
         $filename = $this->uploadImage($request);
 
@@ -75,7 +76,7 @@ class CompanyActivityController extends Controller
 
     public function destroy(Company $company, Activity $activity)
     {
-        $this->authorize('delete', $company);
+        Gate::authorize('delete', $company);
 
         $activity->delete();
 
@@ -90,12 +91,12 @@ class CompanyActivityController extends Controller
 
         $filename = $request->file('image')->store(options: 'activities');
 
-        $img = Image::make(Storage::disk('activities')->get($filename))
-            ->resize(274, 274, function ($constraint) {
-                $constraint->aspectRatio();
-            });
+        $thumb = ImageManager::imagick()->read(Storage::disk('activities')->get($filename))
+            ->scaleDown(274, 274)
+            ->toJpeg()
+            ->toFilePointer();
 
-        Storage::disk('activities')->put('thumbs/' . $request->file('image')->hashName(), $img->stream());
+        Storage::disk('activities')->put('thumbs/' . $request->file('image')->hashName(), $thumb);
 
         return $filename;
     }
