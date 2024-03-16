@@ -92,6 +92,6 @@ class RegisteredUserController extends Controller
             return redirect()->route('my-activity.show')->with('success', 'You have successfully registered.');
         }
 
-        return redirect(RouteServiceProvider::HOME);
+        return redirect(route('home', absolute: false));
     }
 }

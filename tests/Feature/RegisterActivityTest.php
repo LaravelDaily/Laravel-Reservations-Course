@@ -77,4 +77,22 @@ class RegisterActivityTest extends TestCase
 
         $response->assertRedirect(route('register'). '?activity=' . $activity->id);
     }
+
+    public function test_guest_registers_to_activity()
+    {
+        Notification::fake();
+
+        $activity = Activity::factory()->create();
+
+        $response = $this->withSession(['activity' => $activity->id])->post(route('register'), [
+            'name' => 'Test User',
+            'email' => 'test@test.com',
+            'password' => 'password',
+            'password_confirmation' => 'password',
+        ]);
+
+        Notification::assertSentTo(User::where('email', 'test@test.com')->first(), RegisteredToActivityNotification::class);
+
+        $response->assertRedirect(route('my-activity.show'));
+    }
 }
